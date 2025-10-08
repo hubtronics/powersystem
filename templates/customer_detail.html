@@ -68,7 +68,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-6">
         <div class="stat-card">
             <h5 class="mb-3">
@@ -83,8 +83,11 @@
                 </div>
                 <div class="col-6">
                     <h4 class="text-success mb-1">
-                        {% set total_visits = vehicles|sum(attribute='service_visits')|length %}
-                        {{ total_visits or 0 }}
+                        {% set total_visits = 0 %}
+                        {% for vehicle in vehicles %}
+                        {% set total_visits = total_visits + vehicle.service_visits|length %}
+                        {% endfor %}
+                        {{ total_visits }}
                     </h4>
                     <small class="text-muted">Service Visits</small>
                 </div>
@@ -103,7 +106,7 @@
             <i class="fas fa-plus me-2"></i>Add Vehicle
         </a>
     </div>
-    
+
     {% if vehicles %}
     <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -138,10 +141,12 @@
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-outline-primary" title="View Details">
+                            <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}"
+                                class="btn btn-outline-primary" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-outline-success" title="Add Service">
+                            <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}"
+                                class="btn btn-outline-success" title="Add Service">
                                 <i class="fas fa-wrench"></i>
                             </a>
                         </div>

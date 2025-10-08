@@ -91,7 +91,7 @@ class PartUsed(db.Model):
 # ----- Login loader -----
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # ----- Database Initialization -----
 def init_db():
@@ -150,15 +150,20 @@ def home():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    customers = Customer.query.count()
-    vehicles = Vehicle.query.count()
-    service_visits = ServiceVisit.query.count()
-    parts_used = PartUsed.query.count()
-    return render_template('dashboard.html', 
-                         customers=customers,
-                         vehicles=vehicles, 
-                         service_visits=service_visits,
-                         parts_used=parts_used)
+    try:
+        customers = Customer.query.count()
+        vehicles = Vehicle.query.count()
+        service_visits = ServiceVisit.query.count()
+        parts_used = PartUsed.query.count()
+        return render_template('dashboard.html', 
+                             customers=customers,
+                             vehicles=vehicles, 
+                             service_visits=service_visits,
+                             parts_used=parts_used)
+    except Exception as e:
+        print(f"Dashboard error: {e}")
+        app.logger.error(f"Dashboard error: {e}")
+        return f"Dashboard Error: {e}", 500
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -602,5 +607,5 @@ def part_delete(part_id):
 if __name__ == '__main__':
     with app.app_context():
         init_db()
-    # Production configuration
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    # Debug mode for testing
+    app.run(host='0.0.0.0', port=5000, debug=True)
