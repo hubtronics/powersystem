@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Invoice #{{ visit.id }} - {{ visit.vehicle.plate_number }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.3;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #e53e3e;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
+        
+        .company-tagline {
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .company-address {
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+        
+        .quotation-info {
+            text-align: right;
+            border: 2px solid #000;
+            padding: 12px;
+            min-width: 200px;
+        }
+        
+        .quotation-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #e53e3e;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .quotation-fields {
+            text-align: left;
+        }
+        
+        .quotation-fields table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .quotation-fields td {
+            padding: 3px 6px;
+            border: 1px solid #000;
+            font-size: 9pt;
+        }
+        
+        .quotation-fields td:first-child {
+            font-weight: bold;
+            width: 50%;
+        }
+        
+        .customer-section {
+            background-color: #ffd700;
+            padding: 8px 12px;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        
+        .parts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .parts-table th {
+            background-color: #ffd700;
+            color: #000;
+            padding: 6px;
+            text-align: center;
+            font-size: 10pt;
+            font-weight: bold;
+            border: 1px solid #000;
+        }
+        
+        .parts-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            text-align: center;
+            font-size: 9pt;
+        }
+        
+        .parts-table td:nth-child(2) {
+            text-align: left;
+            padding-left: 8px;
+        }
+        
+        .terms-section {
+            border: 1px solid #000;
+            padding: 0;
+            margin: 15px 0;
+            font-size: 8pt;
+        }
+        
+        .terms-title {
+            background-color: #ffd700;
+            padding: 6px 8px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        
+        .terms-content {
+            padding: 8px;
+            line-height: 1.3;
+        }
+        
+        .payment-info {
+            text-align: center;
+            margin: 12px 0;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 9pt;
+        }
+        
+        .slogan {
+            text-align: center;
+            color: #e53e3e;
+            font-style: italic;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 10pt;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .customer-section {
+                background-color: #ffd700 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .terms-title {
+                background-color: #ffd700 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .parts-table th {
+                background-color: #ffd700 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Controls -->
+    <div class="no-print" style="margin-bottom: 20px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 14px; background: #e53e3e; color: white; border: none; cursor: pointer;">Print Invoice</button>
+        <a href="{{ url_for('service_visit_detail', visit_id=visit.id) }}" style="margin-left: 10px; padding: 10px 20px; background: #666; color: white; text-decoration: none;">Back to Service</a>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="company-info">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Power Tune Logo" style="width: 120px; height: 120px; margin-bottom: 15px; border-radius: 12px;">
+            <div class="company-tagline">POWER TUNE AUTO GARAGE</div>
+            <div class="company-address">
+                Westland, Muthithi Road<br>
+                Po box 286,00614 Kiambu<br>
+                Contact: 0748638225/0711592979
+            </div>
+        </div>
+        <div class="quotation-info">
+            <div class="quotation-title">INVOICE</div>
+            <div class="quotation-fields">
+                <table>
+                    <tr>
+                        <td>DATE</td>
+                        <td>{{ visit.visit_date.strftime('%d/%m/%Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td>INVOICE NO</td>
+                        <td>{{ '%03d'|format(visit.id) }}</td>
+                    </tr>
+                    <tr>
+                        <td>CUSTOMER ID</td>
+                        <td>{{ '%03d'|format(visit.vehicle.customer.id) }}</td>
+                    </tr>
+                    <tr>
+                        <td>VALID UNTIL</td>
+                        <td>7Days</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Section -->
+    <div class="customer-section">
+        CUSTOMER<br>
+        Name/Model: {{ visit.vehicle.customer.name }} / {{ visit.vehicle.make }} {{ visit.vehicle.model }}<br>
+        Vehicle Reg: {{ visit.vehicle.plate_number }}<br>
+        Chassis No: {{ visit.vehicle.vin[:10] if visit.vehicle.vin else 'N/A' }}
+    </div>
+
+    <!-- Parts Table -->
+    <table class="parts-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">Qty.</th>
+                <th style="width: 55%;">DESCRIPTION</th>
+                <th style="width: 12%;">@</th>
+                <th style="width: 15%;">Shs.</th>
+                <th style="width: 10%;">Cts.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Service -->
+            {% if visit.service_type %}
+            <tr>
+                <td>1pcs</td>
+                <td style="text-align: left;">{{ visit.service_type }} Service</td>
+                <td></td>
+                <td>{{ '{:,.0f}'.format((visit.service_price or visit.labor_cost or 0)) }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            
+            <!-- Parts -->
+            {% for part in visit.parts_used %}
+            <tr>
+                <td>{{ part.quantity }}pcs</td>
+                <td style="text-align: left;">{{ part.part_name }}</td>
+                <td></td>
+                <td>{{ '{:,.0f}'.format(part.total_part_cost) }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+            
+            <!-- Labor if separate -->
+            {% if visit.labor_cost and visit.service_price %}
+            <tr>
+                <td></td>
+                <td style="text-align: left;">Labor Cost</td>
+                <td></td>
+                <td>{{ '{:,.0f}'.format(visit.labor_cost) }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Financial Summary Box - Right Aligned -->
+    <div style="display: flex; justify-content: flex-end; margin: 15px 0;">
+        <div style="text-align: right; border: 1px solid #000; padding: 10px; min-width: 180px;">
+            <div style="font-weight: bold; font-size: 12pt; margin-bottom: 5px;">
+                TOTAL: {{ '{:,.0f}'.format(visit.total_cost or 0) }}
+            </div>
+            <div style="font-size: 9pt; margin-bottom: 3px;">
+                VAT (16%):
+            </div>
+            <div style="font-size: 9pt; font-weight: bold;">
+                AMOUNT DUE:
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms and Conditions -->
+    <div class="terms-section">
+        <div class="terms-title">TERMS AND CONDITIONS</div>
+        <div class="terms-content">
+            • Customer will be billed after indicating acceptance.<br>
+            • Payment will be done before delivery of the service and goods.<br>
+            • Please All the signed price quote to the address above.<br>
+            • Customer total variance (sign below)
+        </div>
+    </div>
+
+    <!-- Payment Info -->
+    <div class="payment-info">
+        PAYBILL NO: 222111<br>
+        ACCOUNT: 121219
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        If you have any questions about this price quote, please contact us.
+    </div>
+
+    <!-- Slogan -->
+    <div class="slogan">
+        Reignite your passion, power tune delivers.
+    </div>
+
+    <script>
+        // Auto-open print dialog after page loads
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Power Tune Server",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "app.py"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "Install Dependencies",
+            "type": "shell",
+            "command": "pip",
+            "args": [
+                "install",
+                "-r",
+                "requirements.txt"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Create Virtual Environment",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "venv",
+                "venv"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Git Push to Deploy",
+            "type": "shell",
+            "command": "git",
+            "args": [
+                "push",
+                "origin",
+                "main"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "dependsOn": [
+                "Git Add All",
+                "Git Commit"
+            ]
+        },
+        {
+            "label": "Git Add All",
+            "type": "shell",
+            "command": "git",
+            "args": [
+                "add",
+                "."
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "Git Commit",
+            "type": "shell",
+            "command": "git",
+            "args": [
+                "commit",
+                "-m",
+                "Update Power Tune Auto Garage"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "silent"
+            }
+        }
+    ]
+}

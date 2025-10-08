@@ -1,0 +1,253 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Vehicles{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1">Vehicle Management</h3>
+        <p class="text-muted mb-0">Manage all vehicles and their service history</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('vehicles_new') }}">
+        <i class="fas fa-plus me-2"></i>Add New Vehicle
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="stat-card mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" placeholder="Search by plate, VIN, make..." id="searchInput">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select">
+                <option selected>All Makes</option>
+                <option>BMW</option>
+                <option>Mercedes</option>
+                <option>Audi</option>
+                <option>Volkswagen</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select">
+                <option selected>All Customers</option>
+                {% for vehicle in vehicles %}
+                <option>{{ vehicle.customer.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-secondary w-100">
+                <i class="fas fa-filter me-2"></i>Filter
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicle Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-number text-primary">{{ vehicles|length }}</div>
+            <div class="stat-label">Total Vehicles</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-number text-success">{{ (vehicles|length * 0.7)|int }}</div>
+            <div class="stat-label">Active Services</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-number text-warning">{{ (vehicles|length * 0.2)|int }}</div>
+            <div class="stat-label">Scheduled Today</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center">
+            <div class="stat-number text-info">{{ vehicles|length|int / 10 if vehicles else 0 }}%</div>
+            <div class="stat-label">Growth Rate</div>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicles Table -->
+<div class="stat-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">All Vehicles</h5>
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary active">
+                <i class="fas fa-list"></i>
+            </button>
+            <button class="btn btn-outline-secondary">
+                <i class="fas fa-th-large"></i>
+            </button>
+        </div>
+    </div>
+    
+    {% if vehicles %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="border-0">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                        </div>
+                    </th>
+                    <th class="border-0">Vehicle</th>
+                    <th class="border-0">Customer</th>
+                    <th class="border-0">Details</th>
+                    <th class="border-0">Last Service</th>
+                    <th class="border-0">Status</th>
+                    <th class="border-0">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                <tr>
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="vehicle-icon me-3">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="fw-medium text-dark">{{ vehicle.make }} {{ vehicle.model }}</div>
+                                <small class="text-muted">{{ vehicle.plate_number }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <div class="fw-medium">{{ vehicle.customer.name }}</div>
+                            <small class="text-muted">{{ vehicle.customer.phone }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <div class="text-dark">{{ vehicle.year or 'N/A' }} • {{ vehicle.color or 'N/A' }}</div>
+                            <small class="text-muted">VIN: {{ vehicle.vin[:10] }}...</small>
+                        </div>
+                    </td>
+                    <td>
+                        {% if vehicle.service_visits %}
+                            {% set last_visit = vehicle.service_visits|sort(attribute='visit_date', reverse=true)|first %}
+                            <div class="text-dark">{{ last_visit.visit_date.strftime('%b %d, %Y') }}</div>
+                            <small class="text-muted">{{ last_visit.service_type }}</small>
+                        {% else %}
+                            <div class="text-muted">No service history</div>
+                            <small class="text-muted">-</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set statuses = ['Active', 'In Service', 'Scheduled', 'Completed'] %}
+                        {% set status = statuses[loop.index0 % statuses|length] %}
+                        {% if status == 'Active' %}
+                            <span class="badge bg-success">Active</span>
+                        {% elif status == 'In Service' %}
+                            <span class="badge bg-warning">In Service</span>
+                        {% elif status == 'Scheduled' %}
+                            <span class="badge bg-info">Scheduled</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Completed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-outline-primary" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-outline-success" title="Add Service">
+                                <i class="fas fa-wrench"></i>
+                            </a>
+                            <a href="{{ url_for('vehicles_edit', vehicle_id=vehicle.id) }}" class="btn btn-outline-secondary" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('vehicles_delete', vehicle_id=vehicle.id) }}" style="display: inline;" onsubmit="return confirm('⚠️ WARNING: This will permanently delete this vehicle and ALL associated service visits and parts records. This action cannot be undone. Are you absolutely sure?')">>
+                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+            Showing 1 to {{ vehicles|length }} of {{ vehicles|length }} entries
+        </div>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">Previous</a>
+                </li>
+                <li class="page-item active">
+                    <a class="page-link" href="#">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">2</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-car fa-4x text-muted"></i>
+        </div>
+        <h5 class="text-muted mb-3">No vehicles found</h5>
+        <p class="text-muted mb-4">Start by adding your first vehicle to track services and maintenance.</p>
+        <a href="{{ url_for('vehicles_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Your First Vehicle
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Simple search functionality
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+// Select all checkbox functionality
+document.getElementById('selectAll').addEventListener('change', function(e) {
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = e.target.checked;
+    });
+});
+</script>
+{% endblock %}

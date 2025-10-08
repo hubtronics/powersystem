@@ -1,0 +1,258 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}{{ vehicle.make }} {{ vehicle.model }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary me-3">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div class="flex-grow-1">
+        <h3 class="mb-1">{{ vehicle.make }} {{ vehicle.model }} {{ vehicle.year or '' }}</h3>
+        <p class="text-muted mb-0">License: {{ vehicle.plate_number }} • Owner: {{ vehicle.customer.name }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-primary">
+            <i class="fas fa-wrench me-2"></i>New Service
+        </a>
+        <a href="{{ url_for('customer_complete_report', customer_id=vehicle.customer.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-file-alt me-2"></i>Complete Report
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Vehicle Information -->
+    <div class="col-xl-4 mb-4">
+        <div class="stat-card">
+            <h5 class="mb-3">
+                <i class="fas fa-car me-2 text-primary"></i>Vehicle Information
+            </h5>
+            <div class="vehicle-info">
+                <div class="info-item d-flex justify-content-between mb-3 pb-2 border-bottom">
+                    <span class="text-muted">License Plate</span>
+                    <span class="fw-medium">{{ vehicle.plate_number }}</span>
+                </div>
+                <div class="info-item d-flex justify-content-between mb-3 pb-2 border-bottom">
+                    <span class="text-muted">VIN</span>
+                    <span class="fw-medium">{{ vehicle.vin }}</span>
+                </div>
+                <div class="info-item d-flex justify-content-between mb-3 pb-2 border-bottom">
+                    <span class="text-muted">Make & Model</span>
+                    <span class="fw-medium">{{ vehicle.make }} {{ vehicle.model }}</span>
+                </div>
+                <div class="info-item d-flex justify-content-between mb-3 pb-2 border-bottom">
+                    <span class="text-muted">Year</span>
+                    <span class="fw-medium">{{ vehicle.year or 'N/A' }}</span>
+                </div>
+                <div class="info-item d-flex justify-content-between mb-3 pb-2 border-bottom">
+                    <span class="text-muted">Color</span>
+                    <span class="fw-medium">{{ vehicle.color or 'N/A' }}</span>
+                </div>
+                <div class="info-item d-flex justify-content-between">
+                    <span class="text-muted">Mileage</span>
+                    <span class="fw-medium">{{ '{:,}'.format(vehicle.mileage) if vehicle.mileage else 'N/A' }} miles</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information -->
+        <div class="stat-card mt-4">
+            <h6 class="mb-3">
+                <i class="fas fa-user me-2 text-success"></i>Customer Information
+            </h6>
+            <div class="customer-info">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-sm me-3">
+                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px;">
+                            {{ vehicle.customer.name[0].upper() }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fw-medium">{{ vehicle.customer.name }}</div>
+                        <small class="text-muted">Customer</small>
+                    </div>
+                </div>
+                <div class="contact-info">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-phone me-2 text-muted"></i>
+                        <span>{{ vehicle.customer.phone or 'No phone' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-envelope me-2 text-muted"></i>
+                        <span>{{ vehicle.customer.email or 'No email' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Statistics -->
+        <div class="stat-card mt-4">
+            <h6 class="mb-3">
+                <i class="fas fa-chart-bar me-2 text-info"></i>Service Statistics
+            </h6>
+            <div class="service-stats">
+                <div class="stat-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total Visits</span>
+                    <span class="fw-medium">{{ service_visits|length }}</span>
+                </div>
+                <div class="stat-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total Spent</span>
+                    <span class="fw-medium">KSH {{ '{:,.2f}'.format(service_visits|sum(attribute='total_cost')) if service_visits else '0.00' }}</span>
+                </div>
+                <div class="stat-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Last Service</span>
+                    <span class="fw-medium">
+                        {% if service_visits %}
+                            {% set latest_visit = service_visits|sort(attribute='visit_date', reverse=true)|first %}
+                            {{ latest_visit.visit_date.strftime('%b %d, %Y') }}
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="stat-item d-flex justify-content-between">
+                    <span class="text-muted">Next Due</span>
+                    <span class="fw-medium text-warning">Schedule</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service History -->
+    <div class="col-xl-8">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2 text-primary"></i>Service History
+                </h5>
+                <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-2"></i>Add Service
+                </a>
+            </div>
+
+            {% if service_visits %}
+            <div class="service-timeline">
+                {% for visit in service_visits|sort(attribute='visit_date', reverse=true) %}
+                <div class="timeline-item mb-4 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-1">
+                                <h6 class="mb-0 me-3">{{ visit.service_type }}</h6>
+                                <span class="badge bg-{{ 'success' if visit.status == 'Completed' else 'warning' }}">
+                                    {{ visit.status }}
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ visit.visit_date.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% if visit.technician %}
+                                    • <i class="fas fa-user me-1"></i>{{ visit.technician }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-success">KSH {{ '{:,.2f}'.format(visit.total_cost) }}</div>
+                            <small class="text-muted">Total Cost</small>
+                        </div>
+                    </div>
+
+                    {% if visit.customer_complaint %}
+                    <div class="mb-2">
+                        <strong class="text-danger">Customer Complaint:</strong>
+                        <p class="mb-1 text-muted">{{ visit.customer_complaint }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if visit.work_performed %}
+                    <div class="mb-2">
+                        <strong class="text-success">Work Performed:</strong>
+                        <p class="mb-1 text-muted">{{ visit.work_performed }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if visit.description %}
+                    <div class="mb-2">
+                        <strong>Description:</strong>
+                        <p class="mb-1 text-muted">{{ visit.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Parts used in this visit -->
+                    {% if visit.parts_used %}
+                    <div class="parts-section mt-3 pt-3 border-top">
+                        <h6 class="mb-2">
+                            <i class="fas fa-cog me-2"></i>Parts Used
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless">
+                                <thead>
+                                    <tr class="text-muted">
+                                        <th>Part Number</th>
+                                        <th>Description</th>
+                                        <th>Qty</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for part in visit.parts_used %}
+                                    <tr>
+                                        <td class="fw-medium">{{ part.part_number }}</td>
+                                        <td>{{ part.part_name }}</td>
+                                        <td>{{ part.quantity }}</td>
+                                        <td>KSH {{ '{:,.2f}'.format(part.total_part_cost) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Cost breakdown -->
+                    <div class="cost-breakdown mt-3 pt-3 border-top">
+                        <div class="row text-sm">
+                            <div class="col-6">
+                                <span class="text-muted">Labor ({{ visit.labor_hours }}h @ ${{ '{:,.2f}'.format(visit.labor_rate) }}/h):</span>
+                                <span class="fw-medium">${{ '{:,.2f}'.format(visit.labor_cost) }}</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">Parts Total:</span>
+                                <span class="fw-medium">${{ '{:,.2f}'.format(visit.parts_used|sum(attribute='total_part_cost')) if visit.parts_used else '0.00' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons mt-3">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('service_visit_detail', visit_id=visit.id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-secondary" target="_blank">
+                                <i class="fas fa-print me-1"></i>Print Invoice
+                            </a>
+                            <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-1"></i>Add Parts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- No service history -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-wrench fa-4x text-muted"></i>
+                </div>
+                <h6 class="text-muted mb-3">No Service History</h6>
+                <p class="text-muted mb-4">This vehicle hasn't had any services yet. Start by adding the first service visit.</p>
+                <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add First Service
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

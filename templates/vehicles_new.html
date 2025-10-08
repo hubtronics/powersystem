@@ -1,0 +1,252 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}{% if edit_mode %}Edit Vehicle{% else %}Add New Vehicle{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary me-3">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+        <h3 class="mb-1">{% if edit_mode %}Edit Vehicle{% else %}Add New Vehicle{% endif %}</h3>
+        <p class="text-muted mb-0">{% if edit_mode %}Update vehicle and customer details{% else %}Register a new vehicle with customer and vehicle details{% endif %}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8">
+        <div class="stat-card">
+            <form method="post" class="needs-validation" novalidate>
+                <!-- Customer Selection -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-user me-2 text-primary"></i>Customer Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="customer_id" class="form-label fw-medium">Select Customer *</label>
+                        <select name="customer_id" id="customer_id" class="form-select" required>
+                            <option value="">Choose a customer...</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}" {% if edit_mode and vehicle.customer_id == customer.id %}selected{% endif %}>{{ customer.name }} - {{ customer.phone }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a customer.
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-end h-100">
+                            <a href="{{ url_for('customers_new') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Add New Customer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle Details -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3 mt-4">
+                            <i class="fas fa-car me-2 text-primary"></i>Vehicle Details
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="plate_number" class="form-label fw-medium">License Plate Number *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-id-card"></i>
+                            </span>
+                            <input type="text" name="plate_number" id="plate_number" class="form-control" placeholder="ABC-1234" style="text-transform: uppercase;" value="{{ vehicle.plate_number if edit_mode else '' }}" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid plate number.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="vin" class="form-label fw-medium">VIN Number *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-barcode"></i>
+                            </span>
+                            <input type="text" name="vin" id="vin" class="form-control" placeholder="17-character VIN" maxlength="17" value="{{ vehicle.vin if edit_mode else '' }}" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid VIN number.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="make" class="form-label fw-medium">Make *</label>
+                        <select name="make" id="make" class="form-select" required>
+                            <option value="">Select Make</option>
+                            <option value="BMW" {% if edit_mode and vehicle.make == 'BMW' %}selected{% endif %}>BMW</option>
+                            <option value="Mercedes-Benz" {% if edit_mode and vehicle.make == 'Mercedes-Benz' %}selected{% endif %}>Mercedes-Benz</option>
+                            <option value="Audi" {% if edit_mode and vehicle.make == 'Audi' %}selected{% endif %}>Audi</option>
+                            <option value="Volkswagen" {% if edit_mode and vehicle.make == 'Volkswagen' %}selected{% endif %}>Volkswagen</option>
+                            <option value="Porsche" {% if edit_mode and vehicle.make == 'Porsche' %}selected{% endif %}>Porsche</option>
+                            <option value="Toyota" {% if edit_mode and vehicle.make == 'Toyota' %}selected{% endif %}>Toyota</option>
+                            <option value="Honda" {% if edit_mode and vehicle.make == 'Honda' %}selected{% endif %}>Honda</option>
+                            <option value="Nissan" {% if edit_mode and vehicle.make == 'Nissan' %}selected{% endif %}>Nissan</option>
+                            <option value="Ford" {% if edit_mode and vehicle.make == 'Ford' %}selected{% endif %}>Ford</option>
+                            <option value="Chevrolet" {% if edit_mode and vehicle.make == 'Chevrolet' %}selected{% endif %}>Chevrolet</option>
+                            <option value="Other" {% if edit_mode and vehicle.make == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a make.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="model" class="form-label fw-medium">Model *</label>
+                        <input type="text" name="model" id="model" class="form-control" placeholder="e.g., M3, AMG, RS6" value="{{ vehicle.model if edit_mode else '' }}" required>
+                        <div class="invalid-feedback">
+                            Please provide a model.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="year" class="form-label fw-medium">Year</label>
+                        <select name="year" id="year" class="form-select">
+                            <option value="">Select Year</option>
+                            {% for year in range(2024, 1989, -1) %}
+                            <option value="{{ year }}" {% if edit_mode and vehicle.year == year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="color" class="form-label fw-medium">Color</label>
+                        <select name="color" id="color" class="form-select">
+                            <option value="">Select Color</option>
+                            <option value="Black" {% if edit_mode and vehicle.color == 'Black' %}selected{% endif %}>Black</option>
+                            <option value="White" {% if edit_mode and vehicle.color == 'White' %}selected{% endif %}>White</option>
+                            <option value="Silver" {% if edit_mode and vehicle.color == 'Silver' %}selected{% endif %}>Silver</option>
+                            <option value="Gray" {% if edit_mode and vehicle.color == 'Gray' %}selected{% endif %}>Gray</option>
+                            <option value="Blue" {% if edit_mode and vehicle.color == 'Blue' %}selected{% endif %}>Blue</option>
+                            <option value="Red" {% if edit_mode and vehicle.color == 'Red' %}selected{% endif %}>Red</option>
+                            <option value="Green" {% if edit_mode and vehicle.color == 'Green' %}selected{% endif %}>Green</option>
+                            <option value="Yellow" {% if edit_mode and vehicle.color == 'Yellow' %}selected{% endif %}>Yellow</option>
+                            <option value="Other" {% if edit_mode and vehicle.color == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="mileage" class="form-label fw-medium">Current Mileage</label>
+                        <div class="input-group">
+                            <input type="number" name="mileage" id="mileage" class="form-control" placeholder="0">
+                            <span class="input-group-text">miles</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>{% if edit_mode %}Update Vehicle{% else %}Save Vehicle{% endif %}
+                    </button>
+                    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary px-4">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="stat-card">
+            <h5 class="mb-3">
+                <i class="fas fa-lightbulb me-2 text-warning"></i>Vehicle Registration Tips
+            </h5>
+            <div class="tips-list">
+                <div class="tip-item mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-id-card text-primary me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">License Plate</div>
+                            <small class="text-muted">Enter the complete license plate number as it appears on the vehicle.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-item mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-barcode text-success me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">VIN Number</div>
+                            <small class="text-muted">The VIN is usually found on the dashboard or door frame. It's 17 characters long.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-item p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-user text-info me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Customer Link</div>
+                            <small class="text-muted">Make sure to select the correct customer. Each vehicle must be linked to a customer.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card mt-4">
+            <h6 class="mb-3">Vehicle Statistics</h6>
+            <div class="stat-item d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Vehicles</span>
+                <span class="fw-medium">{{ vehicle_count if vehicle_count else 0 }}</span>
+            </div>
+            <div class="stat-item d-flex justify-content-between mb-2">
+                <span class="text-muted">This Month</span>
+                <span class="fw-medium">+8</span>
+            </div>
+            <div class="stat-item d-flex justify-content-between">
+                <span class="text-muted">Popular Make</span>
+                <span class="fw-medium text-primary">BMW</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// VIN number formatting
+document.getElementById('vin').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+});
+
+// Plate number formatting
+document.getElementById('plate_number').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+});
+</script>
+{% endblock %}

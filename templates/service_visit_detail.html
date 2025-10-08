@@ -1,0 +1,303 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Service Visit Details{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ url_for('vehicle_detail', vehicle_id=visit.vehicle.id) }}" class="btn btn-outline-secondary me-3">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div class="flex-grow-1">
+        <h3 class="mb-1">{{ visit.service_type }} - Service Details</h3>
+        <p class="text-muted mb-0">{{ visit.vehicle.make }} {{ visit.vehicle.model }} ({{ visit.vehicle.plate_number }}) • {{ visit.visit_date.strftime('%B %d, %Y') }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Add Parts
+        </a>
+        <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-primary" target="_blank">
+            <i class="fas fa-print me-2"></i>Print Invoice
+        </a>
+        <form method="POST" action="{{ url_for('service_visit_delete', visit_id=visit.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this service visit and all associated parts?')">
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="fas fa-trash me-2"></i>Delete Visit
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Service Information -->
+    <div class="col-xl-8">
+        <!-- Service Summary -->
+        <div class="stat-card mb-4">
+            <h5 class="mb-3">
+                <i class="fas fa-info-circle me-2 text-primary"></i>Service Summary
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item mb-3">
+                        <label class="text-muted small">Service Type</label>
+                        <div class="fw-medium">{{ visit.service_type }}</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="text-muted small">Date & Time</label>
+                        <div class="fw-medium">{{ visit.visit_date.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="text-muted small">Technician</label>
+                        <div class="fw-medium">{{ visit.technician or 'Not assigned' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item mb-3">
+                        <label class="text-muted small">Status</label>
+                        <div>
+                            <span class="badge bg-{{ 'success' if visit.status == 'Completed' else 'warning' }} fs-6">
+                                {{ visit.status }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="text-muted small">Labor Hours</label>
+                        <div class="fw-medium">{{ visit.labor_hours }} hours @ ${{ '{:,.2f}'.format(visit.labor_rate) }}/hour</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="text-muted small">Total Cost</label>
+                        <div class="fw-bold text-success fs-5">${{ '{:,.2f}'.format(visit.total_cost) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Details -->
+        <div class="stat-card mb-4">
+            <h5 class="mb-3">
+                <i class="fas fa-clipboard-list me-2 text-primary"></i>Service Details
+            </h5>
+            
+            {% if visit.customer_complaint %}
+            <div class="detail-section mb-4">
+                <h6 class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Customer Complaint
+                </h6>
+                <div class="p-3 bg-danger bg-opacity-10 border-start border-danger border-3 rounded">
+                    {{ visit.customer_complaint }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if visit.description %}
+            <div class="detail-section mb-4">
+                <h6 class="text-info">
+                    <i class="fas fa-clipboard me-2"></i>Service Description
+                </h6>
+                <div class="p-3 bg-info bg-opacity-10 border-start border-info border-3 rounded">
+                    {{ visit.description }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if visit.work_performed %}
+            <div class="detail-section mb-4">
+                <h6 class="text-success">
+                    <i class="fas fa-check-circle me-2"></i>Work Performed
+                </h6>
+                <div class="p-3 bg-success bg-opacity-10 border-start border-success border-3 rounded">
+                    {{ visit.work_performed }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if visit.notes %}
+            <div class="detail-section">
+                <h6 class="text-warning">
+                    <i class="fas fa-sticky-note me-2"></i>Additional Notes
+                </h6>
+                <div class="p-3 bg-warning bg-opacity-10 border-start border-warning border-3 rounded">
+                    {{ visit.notes }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Parts Used -->
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2 text-primary"></i>Parts Used
+                </h5>
+                <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus me-2"></i>Add Part
+                </a>
+            </div>
+
+            {% if parts %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Part Number</th>
+                            <th>Description</th>
+                            <th>Supplier</th>
+                            <th>Qty</th>
+                            <th>Unit Cost</th>
+                            <th>Delivery</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in parts %}
+                        <tr>
+                            <td class="fw-medium text-primary">{{ part.part_number }}</td>
+                            <td>
+                                <div class="fw-medium">{{ part.part_name }}</div>
+                                {% if part.part_description %}
+                                <small class="text-muted">{{ part.part_description }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ part.supplier or '-' }}</td>
+                            <td>{{ part.quantity }}</td>
+                            <td>${{ '{:,.2f}'.format(part.unit_cost) }}</td>
+                            <td>${{ '{:,.2f}'.format(part.delivery_cost) }}</td>
+                            <td class="fw-bold text-success">KSH {{ '{:,.2f}'.format(part.total_part_cost) }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('part_delete', part_id=part.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this part?')">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Part">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="6" class="text-end fw-bold">Total Parts Cost:</td>
+                            <td class="fw-bold text-success">KSH {{ '{:,.2f}'.format(parts|sum(attribute='total_part_cost')) }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-cog fa-3x text-muted mb-3"></i>
+                <h6 class="text-muted">No Parts Used</h6>
+                <p class="text-muted mb-3">No parts have been added to this service visit yet.</p>
+                <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Add First Part
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-xl-4">
+        <!-- Vehicle Information -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-car me-2 text-primary"></i>Vehicle Information
+            </h6>
+            <div class="d-flex align-items-center mb-3">
+                <div class="vehicle-icon me-3">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">
+                        <i class="fas fa-car"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="fw-bold">{{ visit.vehicle.make }} {{ visit.vehicle.model }}</div>
+                    <small class="text-muted">{{ visit.vehicle.year }} • {{ visit.vehicle.plate_number }}</small>
+                </div>
+            </div>
+            <div class="vehicle-details">
+                <div class="detail-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">VIN</span>
+                    <span class="fw-medium">{{ visit.vehicle.vin }}</span>
+                </div>
+                <div class="detail-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Color</span>
+                    <span class="fw-medium">{{ visit.vehicle.color or 'N/A' }}</span>
+                </div>
+                <div class="detail-item d-flex justify-content-between">
+                    <span class="text-muted">Mileage</span>
+                    <span class="fw-medium">{{ '{:,}'.format(visit.vehicle.mileage) if visit.vehicle.mileage else 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-user me-2 text-success"></i>Customer Information
+            </h6>
+            <div class="d-flex align-items-center mb-3">
+                <div class="avatar-sm me-3">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px;">
+                        {{ visit.vehicle.customer.name[0].upper() }}
+                    </div>
+                </div>
+                <div>
+                    <div class="fw-medium">{{ visit.vehicle.customer.name }}</div>
+                    <small class="text-muted">Customer</small>
+                </div>
+            </div>
+            <div class="contact-info">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-phone me-2 text-muted"></i>
+                    <span>{{ visit.vehicle.customer.phone or 'No phone' }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-envelope me-2 text-muted"></i>
+                    <span>{{ visit.vehicle.customer.email or 'No email' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Breakdown -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-calculator me-2 text-warning"></i>Cost Breakdown
+            </h6>
+            <div class="cost-breakdown">
+                <div class="cost-item d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <span class="text-muted">Labor Cost</span>
+                    <span class="fw-medium">${{ '{:,.2f}'.format(visit.labor_cost) }}</span>
+                </div>
+                <div class="cost-item d-flex justify-content-between mb-2 pb-2 border-bottom">
+                    <span class="text-muted">Parts Cost</span>
+                    <span class="fw-medium">${{ '{:,.2f}'.format(parts|sum(attribute='total_part_cost')) if parts else '0.00' }}</span>
+                </div>
+                <div class="cost-item d-flex justify-content-between">
+                    <span class="fw-bold">Total Cost</span>
+                    <span class="fw-bold text-success fs-5">${{ '{:,.2f}'.format(visit.total_cost) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="stat-card">
+            <h6 class="mb-3">
+                <i class="fas fa-bolt me-2 text-info"></i>Quick Actions
+            </h6>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus me-2"></i>Add Parts
+                </a>
+                <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="fas fa-print me-2"></i>Print Invoice
+                </a>
+                <a href="{{ url_for('vehicle_detail', vehicle_id=visit.vehicle.id) }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-car me-2"></i>View Vehicle
+                </a>
+                <a href="{{ url_for('customer_complete_report', customer_id=visit.vehicle.customer.id) }}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-file-alt me-2"></i>Customer Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

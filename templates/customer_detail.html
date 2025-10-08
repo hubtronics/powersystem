@@ -1,0 +1,164 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}{{ customer.name }} - Customer Details{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h3 class="mb-1">{{ customer.name }}</h3>
+            <p class="text-muted mb-0">Customer Details and Vehicle History</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('customers_edit', customer_id=customer.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-edit me-2"></i>Edit Customer
+        </a>
+        <a href="{{ url_for('customer_complete_report', customer_id=customer.id) }}" class="btn btn-success">
+            <i class="fas fa-file-alt me-2"></i>Complete Report
+        </a>
+    </div>
+</div>
+
+<!-- Customer Information -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="stat-card">
+            <h5 class="mb-3">
+                <i class="fas fa-user me-2 text-primary"></i>Contact Information
+            </h5>
+            <div class="row">
+                <div class="col-6">
+                    <strong>Name:</strong>
+                </div>
+                <div class="col-6">
+                    {{ customer.name }}
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-6">
+                    <strong>Phone:</strong>
+                </div>
+                <div class="col-6">
+                    {{ customer.phone or 'Not provided' }}
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-6">
+                    <strong>Email:</strong>
+                </div>
+                <div class="col-6">
+                    {{ customer.email or 'Not provided' }}
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-6">
+                    <strong>Address:</strong>
+                </div>
+                <div class="col-6">
+                    {{ customer.address or 'Not provided' }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="stat-card">
+            <h5 class="mb-3">
+                <i class="fas fa-chart-bar me-2 text-success"></i>Summary Statistics
+            </h5>
+            <div class="row text-center">
+                <div class="col-6">
+                    <div class="border-end">
+                        <h4 class="text-primary mb-1">{{ vehicles|length }}</h4>
+                        <small class="text-muted">Total Vehicles</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <h4 class="text-success mb-1">
+                        {% set total_visits = vehicles|sum(attribute='service_visits')|length %}
+                        {{ total_visits or 0 }}
+                    </h4>
+                    <small class="text-muted">Service Visits</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicles -->
+<div class="stat-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+            <i class="fas fa-car me-2 text-primary"></i>Vehicles ({{ vehicles|length }})
+        </h5>
+        <a href="{{ url_for('vehicles_new') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-2"></i>Add Vehicle
+        </a>
+    </div>
+    
+    {% if vehicles %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Plate Number</th>
+                    <th>Vehicle Details</th>
+                    <th>Year</th>
+                    <th>Color</th>
+                    <th>Services</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                <tr>
+                    <td>
+                        <strong>{{ vehicle.plate_number }}</strong>
+                    </td>
+                    <td>
+                        <div>
+                            <strong>{{ vehicle.make }} {{ vehicle.model }}</strong>
+                        </div>
+                        {% if vehicle.vin %}
+                        <small class="text-muted">VIN: {{ vehicle.vin }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ vehicle.year or 'N/A' }}</td>
+                    <td>{{ vehicle.color or 'N/A' }}</td>
+                    <td>
+                        <span class="badge bg-info">{{ vehicle.service_visits|length }} visits</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-outline-primary" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-outline-success" title="Add Service">
+                                <i class="fas fa-wrench"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4">
+        <i class="fas fa-car fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No vehicles registered for this customer.</p>
+        <a href="{{ url_for('vehicles_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add First Vehicle
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

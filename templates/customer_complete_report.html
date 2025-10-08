@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Customer Report - {{ customer.name }} - Powertune Auto Garage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { 
+                font-size: 10pt;
+                margin: 0;
+                padding: 0;
+            }
+            .page-break { page-break-after: always; }
+            .stat-card { break-inside: avoid; }
+            .yellow-bg {
+                background-color: #ffd700 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .red-text {
+                color: #e53e3e !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e53e3e;
+            padding-bottom: 20px;
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-name {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #e53e3e;
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+        
+        .company-tagline {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .company-address {
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        
+        .report-info {
+            text-align: right;
+            border: 2px solid #000;
+            padding: 15px;
+            min-width: 220px;
+        }
+        
+        .report-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #e53e3e;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .report-fields table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .report-fields td {
+            padding: 4px 8px;
+            border: 1px solid #000;
+            font-size: 10pt;
+        }
+        
+        .report-fields td:first-child {
+            font-weight: bold;
+            width: 45%;
+        }
+        
+        .customer-section {
+            background-color: #ffd700;
+            padding: 8px 12px;
+            margin: 25px 0;
+            font-weight: bold;
+            font-size: 12pt;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            background-color: #ffd700;
+            color: #000;
+            font-weight: bold;
+            margin: 25px 0 15px 0;
+            padding: 8px 12px;
+            font-size: 12pt;
+            border: 2px solid #000;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .vehicle-card {
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+        }
+        
+        .service-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .service-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e53e3e;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            background: white;
+            border: 1px solid #000;
+            border-radius: 0;
+            padding: 15px;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            background: #e53e3e;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+        
+        .cost-summary {
+            background-color: #ffd700;
+            color: #000;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 0;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .table th {
+            background-color: #ffd700;
+            color: #000;
+            border: 1px solid #000;
+            font-weight: bold;
+            padding: 8px;
+            text-align: center;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            font-size: 10pt;
+        }
+        
+        .summary-box {
+            background: white;
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e53e3e;
+        }
+        
+        .footer-note {
+            border-top: 2px solid #e53e3e;
+            padding-top: 20px;
+            margin-top: 40px;
+            font-size: 10pt;
+            color: #e53e3e;
+            text-align: center;
+            font-style: italic;
+            font-weight: bold;
+        }
+        
+        .parts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .parts-table th {
+            background-color: #ffd700;
+            color: #000;
+            padding: 8px;
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            border: 1px solid #000;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        .parts-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            text-align: center;
+            font-size: 10pt;
+        }
+        
+        .parts-table td:nth-child(2) {
+            text-align: left;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print mb-3 container">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print me-2"></i>Print Report
+        </button>
+        <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-arrow-left me-2"></i>Back to Customers
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="report-header">
+        <div class="company-info">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Power Tune Logo" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 12px;">
+            <div class="company-tagline">POWER TUNE AUTO GARAGE</div>
+            <div class="company-address">
+                Westland, Muthithi Road<br>
+                Po box 286,00614 Kiambu<br>
+                Contact: 0748638225/0711592979
+            </div>
+        </div>
+        <div class="report-info">
+            <div class="report-title">CUSTOMER REPORT</div>
+            <div class="report-fields">
+                <table>
+                    <tr>
+                        <td>DATE</td>
+                        <td>{{ current_date or '08/10/2025' }}</td>
+                    </tr>
+                    <tr>
+                        <td>CUSTOMER</td>
+                        <td>{{ customer.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>VEHICLES</td>
+                        <td>{{ vehicles|length }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Information Section -->
+    <div class="customer-section">
+        CUSTOMER: {{ customer.name }}
+    </div>
+
+    <div class="container">
+        <!-- Customer Summary -->
+        <div class="stat-card">
+            <h4 class="section-title">Customer Information</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                {{ customer.name[0].upper() }}
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ customer.name }}</h5>
+                            <p class="text-muted mb-0">Valued Customer</p>
+                        </div>
+                    </div>
+                    <div class="contact-info">
+                        <p class="mb-2">
+                            <i class="fas fa-phone me-2 text-primary"></i>
+                            {{ customer.phone or 'No phone provided' }}
+                        </p>
+                        <p class="mb-0">
+                            <i class="fas fa-envelope me-2 text-primary"></i>
+                            {{ customer.email or 'No email provided' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="summary-box">
+                                <div class="summary-number">{{ vehicles|length }}</div>
+                                <small class="text-muted">Vehicles</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="summary-box">
+                                <div class="summary-number">{{ all_visits|length }}</div>
+                                <small class="text-muted">Total Visits</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="summary-box">
+                                <div class="summary-number">KSH {{ '{:,.0f}'.format(all_visits|sum(attribute='total_cost')) if all_visits else '0' }}</div>
+                                <small class="text-muted">Total Spent</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="summary-box">
+                                <div class="summary-number">
+                                    {% if all_visits %}
+                                        {% set sorted_visits = all_visits|sort(attribute='visit_date', reverse=true) %}
+                                        {% if sorted_visits %}
+                                            {{ sorted_visits[0].visit_date.strftime('%b %Y') }}
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">Last Visit</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicles Overview -->
+        <div class="stat-card">
+            <h4 class="section-title">
+                <i class="fas fa-car me-2"></i>Customer Vehicles
+            </h4>
+            <div class="row">
+                {% for vehicle in vehicles %}
+                <div class="col-md-6 mb-3">
+                    <div class="vehicle-card">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ vehicle.year or '' }} {{ vehicle.make }} {{ vehicle.model }}</h6>
+                                <small class="text-muted">{{ vehicle.plate_number }} • {{ vehicle.color or 'Color N/A' }}</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Services:</small>
+                                <div class="fw-bold">{{ vehicle.service_visits|length }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Total Spent:</small>
+                                <div class="fw-bold text-success">KSH {{ '{:,.0f}'.format(vehicle.service_visits|sum(attribute='total_cost')) if vehicle.service_visits else '0' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Service History Timeline -->
+        <div class="stat-card">
+            <h4 class="section-title">
+                <i class="fas fa-history me-2"></i>Complete Service History
+            </h4>
+            
+            {% if all_visits %}
+            <div class="service-timeline">
+                {% for visit in all_visits %}
+                <div class="timeline-item">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">{{ visit.service_type }}</h6>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-car me-2"></i>{{ visit.vehicle.make }} {{ visit.vehicle.model }} ({{ visit.vehicle.plate_number }})
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>{{ visit.visit_date.strftime('%B %d, %Y') }}
+                                        {% if visit.technician %}• <i class="fas fa-user me-1"></i>{{ visit.technician }}{% endif %}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{{ 'success' if visit.status == 'Completed' else 'warning' }}">
+                                        {{ visit.status }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            {% if visit.customer_complaint %}
+                            <div class="mb-2">
+                                <strong class="text-danger">Issue:</strong>
+                                <p class="mb-1 small">{{ visit.customer_complaint }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if visit.work_performed %}
+                            <div class="mb-2">
+                                <strong class="text-success">Work Done:</strong>
+                                <p class="mb-1 small">{{ visit.work_performed }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if visit.parts_used %}
+                            <div class="parts-section">
+                                <strong>Parts Used:</strong>
+                                <ul class="mb-0 small">
+                                    {% for part in visit.parts_used %}
+                                    <li>{{ part.part_name }} ({{ part.part_number }}) - Qty: {{ part.quantity }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="cost-breakdown">
+                                <div class="mb-1 small">
+                                    <span class="text-muted">Service:</span> KSH {{ '{:,.2f}'.format(visit.service_price or visit.labor_cost) }}
+                                </div>
+                                <div class="mb-2 small">
+                                    <span class="text-muted">Parts:</span> KSH {{ '{:,.2f}'.format(visit.parts_used|sum(attribute='total_part_cost')) if visit.parts_used else '0.00' }}
+                                </div>
+                                <div class="fw-bold text-success">
+                                    Total: KSH {{ '{:,.2f}'.format(visit.total_cost) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">No Service History</h5>
+                <p class="text-muted">This customer hasn't had any services yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Financial Summary -->
+        {% if all_visits %}
+        <div class="stat-card">
+            <h4 class="section-title">
+                <i class="fas fa-chart-bar me-2"></i>Financial Summary
+            </h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="table-responsive">
+                        <table class="parts-table">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Services</th>
+                                    <th>Service Total</th>
+                                    <th>Parts Total</th>
+                                    <th>Grand Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vehicle in vehicles %}
+                                {% if vehicle.service_visits %}
+                                <tr>
+                                    <td>{{ vehicle.make }} {{ vehicle.model }}</td>
+                                    <td>{{ vehicle.service_visits|length }}</td>
+                                    <td>KSH {{ '{:,.2f}'.format(vehicle.service_visits|sum(attribute='labor_cost')) }}</td>
+                                    <td>KSH {{ '0.00' }}</td>
+                                    <td class="fw-bold">KSH {{ '{:,.2f}'.format(vehicle.service_visits|sum(attribute='total_cost')) }}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #ffd700; font-weight: bold;">
+                                    <th>TOTALS</th>
+                                    <th>{{ all_visits|length }}</th>
+                                    <th>KSH {{ '{:,.2f}'.format(all_visits|sum(attribute='labor_cost')) }}</th>
+                                    <th>KSH {{ '0.00' }}</th>
+                                    <th class="fw-bold">KSH {{ '{:,.2f}'.format(all_visits|sum(attribute='total_cost')) }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="cost-summary">
+                        <h5 class="mb-3">Overall Summary</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Services:</span>
+                            <span class="fw-bold">{{ all_visits|length }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Average per Visit:</span>
+                            <span class="fw-bold">KSH {{ '{:,.2f}'.format(all_visits|sum(attribute='total_cost') / all_visits|length) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Service:</span>
+                            <span class="fw-bold">KSH {{ '{:,.2f}'.format(all_visits|sum(attribute='labor_cost')) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Total Parts:</span>
+                            <span class="fw-bold">KSH {{ '0.00' }}</span>
+                        </div>
+                        <hr style="border-color: rgba(255,255,255,0.3);">
+                        <div class="d-flex justify-content-between">
+                            <strong>GRAND TOTAL:</strong>
+                            <strong style="font-size: 1.3rem;">KSH {{ '{:,.2f}'.format(all_visits|sum(attribute='total_cost')) }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="footer-note">
+            <p class="mb-2">If you have any questions about this customer report, please contact us.</p>
+            <p class="mb-1"><strong>PAYBILL NO: 222111 | ACCOUNT: 121219</strong></p>
+            <p class="mb-0"><strong>Reignite your passion, power tune delivers.</strong></p>
+        </div>
+                <small>
+                    Report generated by Powertune Auto Garage Management System • 
+                    All amounts are in USD • For questions, call (555) 123-TUNE
+                </small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

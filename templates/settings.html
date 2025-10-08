@@ -1,0 +1,276 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xl-8">
+        <!-- Profile Settings -->
+        <div class="stat-card mb-4">
+            <h5 class="mb-4">
+                <i class="fas fa-user-cog me-2 text-primary"></i>Profile Settings
+            </h5>
+            <form>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label fw-medium">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control" id="username" value="{{ current_user.username }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label fw-medium">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" placeholder="admin@powertuneauto.co.ke">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="fullname" class="form-label fw-medium">Full Name</label>
+                        <input type="text" class="form-control" id="fullname" placeholder="Enter your full name">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label fw-medium">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" placeholder="(555) 123-4567">
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Profile
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="stat-card mb-4">
+            <h5 class="mb-4">
+                <i class="fas fa-shield-alt me-2 text-primary"></i>Security Settings
+            </h5>
+            <form>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="currentPassword" class="form-label fw-medium">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="newPassword" class="form-label fw-medium">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="confirmPassword" class="form-label fw-medium">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Application Settings -->
+        <div class="stat-card mb-4">
+            <h5 class="mb-4">
+                <i class="fas fa-cogs me-2 text-primary"></i>Application Settings
+            </h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-medium">Theme Preference</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="theme" id="lightTheme" {{ 'checked' if theme == 'light' else '' }}>
+                            <label class="form-check-label" for="lightTheme">
+                                <i class="fas fa-sun me-2"></i>Light Theme
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="theme" id="darkTheme" {{ 'checked' if theme == 'dark' else '' }}>
+                            <label class="form-check-label" for="darkTheme">
+                                <i class="fas fa-moon me-2"></i>Dark Theme
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{{ url_for('toggle_theme') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-sync me-2"></i>Toggle Theme
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="language" class="form-label fw-medium">Language</label>
+                    <select class="form-select" id="language">
+                        <option selected>English (US)</option>
+                        <option>Spanish (ES)</option>
+                        <option>French (FR)</option>
+                        <option>German (DE)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="timezone" class="form-label fw-medium">Timezone</label>
+                    <select class="form-select" id="timezone">
+                        <option selected>Eastern Time (ET)</option>
+                        <option>Pacific Time (PT)</option>
+                        <option>Central Time (CT)</option>
+                        <option>Mountain Time (MT)</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="dateFormat" class="form-label fw-medium">Date Format</label>
+                    <select class="form-select" id="dateFormat">
+                        <option selected>MM/DD/YYYY</option>
+                        <option>DD/MM/YYYY</option>
+                        <option>YYYY-MM-DD</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="stat-card">
+            <h5 class="mb-4">
+                <i class="fas fa-bell me-2 text-primary"></i>Notification Settings
+            </h5>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                        <label class="form-check-label fw-medium" for="emailNotifications">
+                            Email Notifications
+                        </label>
+                        <div class="text-muted small">Receive email notifications for important updates</div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="smsNotifications">
+                        <label class="form-check-label fw-medium" for="smsNotifications">
+                            SMS Notifications
+                        </label>
+                        <div class="text-muted small">Receive SMS alerts for urgent matters</div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="appointmentReminders" checked>
+                        <label class="form-check-label fw-medium" for="appointmentReminders">
+                            Appointment Reminders
+                        </label>
+                        <div class="text-muted small">Get reminders about upcoming appointments</div>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="systemUpdates" checked>
+                        <label class="form-check-label fw-medium" for="systemUpdates">
+                            System Updates
+                        </label>
+                        <div class="text-muted small">Notifications about system maintenance and updates</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <!-- Current Theme Info -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-info-circle me-2 text-info"></i>Current Configuration
+            </h6>
+            <div class="config-item d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-muted">Theme</span>
+                <span class="badge bg-{{ 'dark' if theme == 'dark' else 'light text-dark' }}">
+                    {{ theme.title() }}
+                </span>
+            </div>
+            <div class="config-item d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-muted">Role</span>
+                <span class="badge bg-primary">{{ current_user.role.title() }}</span>
+            </div>
+            <div class="config-item d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-muted">Last Login</span>
+                <span class="text-muted small">Just now</span>
+            </div>
+            <div class="config-item d-flex justify-content-between align-items-center">
+                <span class="text-muted">Session</span>
+                <span class="badge bg-success">Active</span>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+            </h6>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-download me-2"></i>Export Data
+                </button>
+                <button class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-database me-2"></i>Backup Database
+                </button>
+                <button class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-chart-line me-2"></i>View Analytics
+                </button>
+                <button class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-trash me-2"></i>Clear Cache
+                </button>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="stat-card">
+            <h6 class="mb-3">
+                <i class="fas fa-server me-2 text-success"></i>System Information
+            </h6>
+            <div class="system-info">
+                <div class="info-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Version</span>
+                    <span class="fw-medium">v1.0.0</span>
+                </div>
+                <div class="info-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Database</span>
+                    <span class="fw-medium">SQLite</span>
+                </div>
+                <div class="info-item d-flex justify-content-between mb-2">
+                    <span class="text-muted">Framework</span>
+                    <span class="fw-medium">Flask</span>
+                </div>
+                <div class="info-item d-flex justify-content-between">
+                    <span class="text-muted">Uptime</span>
+                    <span class="fw-medium">2h 15m</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Theme change handler
+document.querySelectorAll('input[name="theme"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        if (this.checked) {
+            // You can implement auto theme change here
+            console.log('Theme changed to:', this.id.replace('Theme', ''));
+        }
+    });
+});
+
+// Form submission handlers
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Add your form submission logic here
+    alert('Settings updated successfully!');
+});
+</script>
+{% endblock %}

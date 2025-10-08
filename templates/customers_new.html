@@ -1,0 +1,233 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}{% if edit_mode %}Edit Customer{% else %}Add New Customer{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary me-3">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+        <h3 class="mb-1">{% if edit_mode %}Edit Customer{% else %}Add New Customer{% endif %}</h3>
+        <p class="text-muted mb-0">{% if edit_mode %}Update customer profile and details{% else %}Create a new customer profile with their details{% endif %}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8">
+        <div class="stat-card">
+            <form method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-user me-2 text-primary"></i>Personal Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label fw-medium">Full Name *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="name" id="name" class="form-control" placeholder="Enter customer's full name" value="{{ customer.name if edit_mode else '' }}" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid name.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label fw-medium">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" name="phone" id="phone" class="form-control" placeholder="(555) 123-4567" value="{{ customer.phone if edit_mode else '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label fw-medium">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" name="email" id="email" class="form-control" placeholder="customer@example.com" value="{{ customer.email if edit_mode else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="vehicle" class="form-label fw-medium">Primary Vehicle</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-car"></i>
+                            </span>
+                            <input type="text" name="vehicle" id="vehicle" class="form-control" placeholder="e.g., 2020 BMW M3">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3 mt-4">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>Address Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="address" class="form-label fw-medium">Street Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-home"></i>
+                            </span>
+                            <input type="text" name="address" id="address" class="form-control" placeholder="123 Main Street" value="{{ customer.address if edit_mode else '' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="city" class="form-label fw-medium">City</label>
+                        <input type="text" name="city" id="city" class="form-control" placeholder="City">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="state" class="form-label fw-medium">State</label>
+                        <select name="state" id="state" class="form-select">
+                            <option value="">Select State</option>
+                            <option value="AL">Alabama</option>
+                            <option value="CA">California</option>
+                            <option value="FL">Florida</option>
+                            <option value="NY">New York</option>
+                            <option value="TX">Texas</option>
+                            <!-- Add more states as needed -->
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="zip" class="form-label fw-medium">ZIP Code</label>
+                        <input type="text" name="zip" id="zip" class="form-control" placeholder="12345">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3 mt-4">
+                            <i class="fas fa-sticky-note me-2 text-primary"></i>Additional Notes
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <label for="notes" class="form-label fw-medium">Customer Notes</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Any special notes about this customer, their preferences, or vehicle details..."></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>{% if edit_mode %}Update Customer{% else %}Save Customer{% endif %}
+                    </button>
+                    <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary px-4">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="stat-card">
+            <h5 class="mb-3">
+                <i class="fas fa-lightbulb me-2 text-warning"></i>Quick Tips
+            </h5>
+            <div class="tips-list">
+                <div class="tip-item mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Complete Profile</div>
+                            <small class="text-muted">Fill in as much information as possible for better customer management.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-item mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-phone text-primary me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Contact Preference</div>
+                            <small class="text-muted">Ask customers their preferred contact method during registration.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-item p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-car text-info me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Vehicle Details</div>
+                            <small class="text-muted">Include year, make, model, and any modifications for accurate service records.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card mt-4">
+            <h6 class="mb-3">Customer Statistics</h6>
+            <div class="stat-item d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Customers</span>
+                <span class="fw-medium">{{ customers_count if customers_count else 0 }}</span>
+            </div>
+            <div class="stat-item d-flex justify-content-between mb-2">
+                <span class="text-muted">This Month</span>
+                <span class="fw-medium">+12</span>
+            </div>
+            <div class="stat-item d-flex justify-content-between">
+                <span class="text-muted">Growth Rate</span>
+                <span class="fw-medium text-success">+15%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Phone number formatting
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 6) {
+        value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+    } else if (value.length >= 3) {
+        value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+    }
+    e.target.value = value;
+});
+</script>
+{% endblock %}

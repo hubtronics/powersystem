@@ -1,0 +1,144 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-2">Welcome back, {{ current_user.username }}!</h3>
+                    <p class="text-muted mb-0">Powertune Auto Garage Management System</p>
+                    {% if customers == 0 and vehicles == 0 and service_visits == 0 %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your system is ready! Start by adding your first customer and vehicle.
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="text-end">
+                    <a href="{{ url_for('customers_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Customer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('customers') }}" class="text-decoration-none">
+            <div class="stat-card stat-card-hover">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: var(--primary-light);">
+                            <i class="fas fa-users" style="color: var(--primary-color); font-size: 1.2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number">{{ customers or 0 }}</div>
+                        <div class="stat-label">Total Customers</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('vehicles') }}" class="text-decoration-none">
+            <div class="stat-card stat-card-hover">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: var(--success-light);">
+                            <i class="fas fa-car" style="color: var(--success-color); font-size: 1.2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number">{{ vehicles or 0 }}</div>
+                        <div class="stat-label">Vehicles</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
+            <div class="stat-card stat-card-hover">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: var(--warning-light);">
+                            <i class="fas fa-wrench" style="color: var(--warning-color); font-size: 1.2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number">{{ service_visits or 0 }}</div>
+                        <div class="stat-label">Service Visits</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
+            <div class="stat-card stat-card-hover">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: var(--info-light);">
+                            <i class="fas fa-cogs" style="color: var(--info-color); font-size: 1.2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="stat-number">{{ parts_used or 0 }}</div>
+                        <div class="stat-label">Parts Used</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="stat-card">
+            <h5 class="mb-3">Quick Actions</h5>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <a href="{{ url_for('customers_new') }}" class="btn btn-outline-primary w-100 p-3">
+                        <i class="fas fa-user-plus mb-2 d-block" style="font-size: 1.5rem;"></i>
+                        Add Customer
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ url_for('vehicles_new') }}" class="btn btn-outline-success w-100 p-3">
+                        <i class="fas fa-car-side mb-2 d-block" style="font-size: 1.5rem;"></i>
+                        Add Vehicle
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-warning w-100 p-3">
+                        <i class="fas fa-wrench mb-2 d-block" style="font-size: 1.5rem;"></i>
+                        New Service
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ url_for('customers') }}" class="btn btn-outline-info w-100 p-3">
+                        <i class="fas fa-search mb-2 d-block" style="font-size: 1.5rem;"></i>
+                        View Records
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

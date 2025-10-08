@@ -1,0 +1,794 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}New Service Visit{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-outline-secondary me-3">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+        <h3 class="mb-1">New Service Visit</h3>
+        <p class="text-muted mb-0">{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.plate_number }}) - {{ vehicle.customer.name }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8">
+        <div class="stat-card">
+            <form method="post" class="needs-validation" novalidate>
+                <!-- Service Information -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-wrench me-2 text-primary"></i>Service Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="service_type" class="form-label fw-medium">Service Type *</label>
+                        <select name="service_type" id="service_type" class="form-select" required>
+                            <option value="">Select Service Type</option>
+                            <option value="Engine Tune">Engine Tune</option>
+                            <option value="ECU Remap">ECU Remap</option>
+                            <option value="Suspension Work">Suspension Work</option>
+                            <option value="Brake Service">Brake Service</option>
+                            <option value="Transmission">Transmission</option>
+                            <option value="Exhaust System">Exhaust System</option>
+                            <option value="Turbo/Supercharger">Turbo/Supercharger</option>
+                            <option value="Diagnostics">Diagnostics</option>
+                            <option value="Oil Change">Oil Change</option>
+                            <option value="General Maintenance">General Maintenance</option>
+                            <option value="Performance Upgrade">Performance Upgrade</option>
+                            <option value="Dyno Testing">Dyno Testing</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a service type.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="technician" class="form-label fw-medium">Technician</label>
+                        <input type="text" name="technician" id="technician" class="form-control" placeholder="Technician name" value="{{ current_user.username }}">
+                    </div>
+                </div>
+
+                <!-- Customer Complaint -->
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="customer_complaint" class="form-label fw-medium">Customer Complaint/Issue</label>
+                        <textarea name="customer_complaint" id="customer_complaint" class="form-control" rows="3" placeholder="What did the customer report? What issues are they experiencing?"></textarea>
+                        <small class="text-muted">Describe what the customer reported or complained about</small>
+                    </div>
+                </div>
+
+                <!-- Service Description -->
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="description" class="form-label fw-medium">Service Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" placeholder="Describe the service to be performed or initial assessment..."></textarea>
+                        <small class="text-muted">Initial service plan or assessment</small>
+                    </div>
+                </div>
+
+                <!-- Work Performed -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <label for="work_performed" class="form-label fw-medium">Work Performed</label>
+                        <textarea name="work_performed" id="work_performed" class="form-control" rows="4" placeholder="Detailed description of work actually performed..."></textarea>
+                        <small class="text-muted">Detailed description of what was actually done</small>
+                    </div>
+                </div>
+
+                <!-- Labor Information -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-tools me-2 text-primary"></i>Service Pricing
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="service_price" class="form-label fw-medium">Service Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KSH</span>
+                            <input type="number" name="service_price" id="service_price" class="form-control" step="0.01" min="0" placeholder="5000.00" required>
+                        </div>
+                        <small class="text-muted">Fixed price for this service</small>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="service_cost_display" class="form-label fw-medium">Service Cost</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KSH</span>
+                            <input type="text" id="service_cost_display" class="form-control" readonly placeholder="0.00">
+                        </div>
+                        <small class="text-muted">Same as service price</small>
+                    </div>
+                </div>
+
+                <!-- Parts Information -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-cogs me-2 text-primary"></i>Parts & Components
+                        </h5>
+                    </div>
+                </div>
+
+                <div id="parts-container">
+                    <div class="part-row border rounded p-4 mb-4" style="background-color: #f8f9fa;">
+                        <div class="row g-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Part Name</label>
+                                <select name="part_name[]" class="form-select form-select-lg part-name-select">
+                                    <option value="">Select Part</option>
+                                    <optgroup label="Engine Parts">
+                                        <option value="Air Filter">Air Filter</option>
+                                        <option value="Oil Filter">Oil Filter</option>
+                                        <option value="Fuel Filter">Fuel Filter</option>
+                                        <option value="Spark Plugs">Spark Plugs</option>
+                                        <option value="Ignition Coils">Ignition Coils</option>
+                                        <option value="Timing Belt">Timing Belt</option>
+                                        <option value="Water Pump">Water Pump</option>
+                                        <option value="Thermostat">Thermostat</option>
+                                        <option value="Radiator">Radiator</option>
+                                        <option value="Turbocharger">Turbocharger</option>
+                                        <option value="Intercooler">Intercooler</option>
+                                        <option value="Mass Air Flow Sensor">Mass Air Flow Sensor</option>
+                                        <option value="Oxygen Sensor">Oxygen Sensor</option>
+                                    </optgroup>
+                                    <optgroup label="Suspension & Steering">
+                                        <option value="Shock Absorbers">Shock Absorbers</option>
+                                        <option value="Struts">Struts</option>
+                                        <option value="Springs">Springs</option>
+                                        <option value="Bushings">Bushings</option>
+                                        <option value="Ball Joints">Ball Joints</option>
+                                        <option value="Tie Rod Ends">Tie Rod Ends</option>
+                                        <option value="Control Arms">Control Arms</option>
+                                        <option value="Anti-Roll Bar Links">Anti-Roll Bar Links</option>
+                                        <option value="Steering Rack">Steering Rack</option>
+                                        <option value="Power Steering Pump">Power Steering Pump</option>
+                                    </optgroup>
+                                    <optgroup label="Brakes">
+                                        <option value="Brake Pads">Brake Pads</option>
+                                        <option value="Brake Discs/Rotors">Brake Discs/Rotors</option>
+                                        <option value="Brake Calipers">Brake Calipers</option>
+                                        <option value="Brake Lines/Hoses">Brake Lines/Hoses</option>
+                                        <option value="Brake Fluid">Brake Fluid</option>
+                                        <option value="Master Cylinder">Master Cylinder</option>
+                                        <option value="ABS Sensor">ABS Sensor</option>
+                                    </optgroup>
+                                    <optgroup label="Transmission">
+                                        <option value="Transmission Filter">Transmission Filter</option>
+                                        <option value="Transmission Fluid">Transmission Fluid</option>
+                                        <option value="Clutch Kit">Clutch Kit</option>
+                                        <option value="Flywheel">Flywheel</option>
+                                        <option value="CV Joints">CV Joints</option>
+                                        <option value="Driveshaft">Driveshaft</option>
+                                    </optgroup>
+                                    <optgroup label="Exhaust System">
+                                        <option value="Catalytic Converter">Catalytic Converter</option>
+                                        <option value="Exhaust Manifold">Exhaust Manifold</option>
+                                        <option value="Muffler">Muffler</option>
+                                        <option value="Exhaust Pipe">Exhaust Pipe</option>
+                                        <option value="Lambda Sensor">Lambda Sensor</option>
+                                    </optgroup>
+                                    <optgroup label="Electrical">
+                                        <option value="Battery">Battery</option>
+                                        <option value="Alternator">Alternator</option>
+                                        <option value="Starter Motor">Starter Motor</option>
+                                        <option value="ECU/PCM">ECU/PCM</option>
+                                        <option value="Wiring Harness">Wiring Harness</option>
+                                        <option value="Sensors">Sensors</option>
+                                    </optgroup>
+                                    <optgroup label="Performance Parts">
+                                        <option value="Cold Air Intake">Cold Air Intake</option>
+                                        <option value="Performance Exhaust">Performance Exhaust</option>
+                                        <option value="Blow-off Valve">Blow-off Valve</option>
+                                        <option value="Chip/Tune">Chip/Tune</option>
+                                        <option value="Coilovers">Coilovers</option>
+                                        <option value="Sway Bars">Sway Bars</option>
+                                        <option value="Brake Upgrade Kit">Brake Upgrade Kit</option>
+                                    </optgroup>
+                                    <optgroup label="Fluids & Lubricants">
+                                        <option value="Engine Oil">Engine Oil</option>
+                                        <option value="Coolant">Coolant</option>
+                                        <option value="Power Steering Fluid">Power Steering Fluid</option>
+                                        <option value="Differential Oil">Differential Oil</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="Custom Part">Custom Part (Enter manually)</option>
+                                    </optgroup>
+                                </select>
+                                <input type="text" name="part_name_custom[]" class="form-control form-control-lg mt-2 part-name-custom" placeholder="Enter custom part name" style="display: none;">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-medium">Part Number</label>
+                                <input type="text" name="part_number[]" class="form-control form-control-lg part-number-input" placeholder="Auto-generated">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label fw-medium">Quantity</label>
+                                <input type="number" name="part_quantity[]" class="form-control form-control-lg part-quantity" min="1" value="1" step="1">
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Unit Price</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">KSH</span>
+                                    <input type="number" name="part_unit_cost[]" class="form-control part-unit-cost" step="0.01" min="0" placeholder="2000.00">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Delivery Cost</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">KSH</span>
+                                    <input type="number" name="part_delivery_cost[]" class="form-control part-delivery-cost" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-medium">Part Total</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-success text-white">KSH</span>
+                                    <input type="text" class="form-control part-total fw-bold" readonly placeholder="0.00" style="background-color: #e8f5e8;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-end">
+                                <button type="button" class="btn btn-outline-danger remove-part-btn" style="display: none;">
+                                    <i class="fas fa-trash me-1"></i>Remove Part
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <button type="button" id="add-part-btn" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Add Another Part
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cost Summary -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-calculator me-2 text-primary"></i>Cost Summary
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-medium">Service Cost</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">KSH</span>
+                            <input type="text" id="summary-service-cost" class="form-control" readonly placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-medium">Total Parts Cost</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">KSH</span>
+                            <input type="text" id="summary-parts-cost" class="form-control" readonly placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-medium">Grand Total</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-primary text-white">KSH</span>
+                            <input type="text" id="summary-grand-total" class="form-control fw-bold" readonly placeholder="0.00" style="background-color: #e3f2fd; font-size: 1.1em;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-sticky-note me-2 text-primary"></i>Additional Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="notes" class="form-label fw-medium">Service Notes</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Any additional notes, recommendations, or follow-up needed..."></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>Create Service Visit
+                    </button>
+                    <a href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-outline-secondary px-4">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <!-- Vehicle Summary -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-car me-2 text-primary"></i>Vehicle Summary
+            </h6>
+            <div class="vehicle-summary">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="vehicle-icon me-3">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">
+                            <i class="fas fa-car"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ vehicle.make }} {{ vehicle.model }}</div>
+                        <small class="text-muted">{{ vehicle.year }} • {{ vehicle.plate_number }}</small>
+                    </div>
+                </div>
+                <div class="vehicle-details">
+                    <div class="detail-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Customer</span>
+                        <span class="fw-medium">{{ vehicle.customer.name }}</span>
+                    </div>
+                    <div class="detail-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Color</span>
+                        <span class="fw-medium">{{ vehicle.color or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Current Mileage</span>
+                        <span class="fw-medium">{{ '{:,}'.format(vehicle.mileage) if vehicle.mileage else 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item d-flex justify-content-between">
+                        <span class="text-muted">VIN</span>
+                        <span class="fw-medium">{{ vehicle.vin[:8] }}...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Tips -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-lightbulb me-2 text-warning"></i>Service Tips
+            </h6>
+            <div class="tips-list">
+                <div class="tip-item mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-clipboard-list text-primary me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Document Everything</div>
+                            <small class="text-muted">Record both what the customer reported and what work was actually performed.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-item mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-clock text-success me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Accurate Time Tracking</div>
+                            <small class="text-muted">Track labor hours accurately for proper billing and cost analysis.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-item p-3 bg-light rounded">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-cog text-info me-2 mt-1"></i>
+                        <div>
+                            <div class="fw-medium">Parts Tracking</div>
+                            <small class="text-muted">You can add parts and their costs after creating the service visit.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Service History -->
+        {% if vehicle.service_visits %}
+        <div class="stat-card">
+            <h6 class="mb-3">
+                <i class="fas fa-history me-2 text-info"></i>Recent Services
+            </h6>
+            <div class="recent-services">
+                {% set recent_visits = vehicle.service_visits|sort(attribute='visit_date', reverse=true) %}
+                {% for visit in recent_visits %}
+                {% if loop.index <= 3 %}
+                <div class="service-item d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div>
+                        <div class="fw-medium">{{ visit.service_type }}</div>
+                        <small class="text-muted">{{ visit.visit_date.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-medium text-success">KSH {{ '{:,.0f}'.format(visit.total_cost) }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Calculate service cost automatically
+function calculateServiceCost() {
+    const servicePrice = parseFloat(document.getElementById('service_price').value) || 0;
+    document.getElementById('service_cost_display').value = servicePrice.toFixed(2);
+    document.getElementById('summary-service-cost').value = servicePrice.toFixed(2);
+    updateGrandTotal();
+}
+
+// Calculate individual part cost
+function calculatePartCost(partRow) {
+    const quantity = parseFloat(partRow.querySelector('.part-quantity').value) || 0;
+    const unitCost = parseFloat(partRow.querySelector('.part-unit-cost').value) || 0;
+    const deliveryCost = parseFloat(partRow.querySelector('.part-delivery-cost').value) || 0;
+    const total = (quantity * unitCost) + deliveryCost;
+    partRow.querySelector('.part-total').value = total.toFixed(2);
+    updatePartsTotal();
+}
+
+// Update total parts cost
+function updatePartsTotal() {
+    let partsTotal = 0;
+    document.querySelectorAll('.part-total').forEach(function(input) {
+        partsTotal += parseFloat(input.value) || 0;
+    });
+    document.getElementById('summary-parts-cost').value = partsTotal.toFixed(2);
+    updateGrandTotal();
+}
+
+// Update grand total
+function updateGrandTotal() {
+    const serviceTotal = parseFloat(document.getElementById('summary-service-cost').value) || 0;
+    const partsTotal = parseFloat(document.getElementById('summary-parts-cost').value) || 0;
+    const grandTotal = serviceTotal + partsTotal;
+    document.getElementById('summary-grand-total').value = grandTotal.toFixed(2);
+}
+
+// Add new part row
+function addPartRow() {
+    const container = document.getElementById('parts-container');
+    const firstRow = container.querySelector('.part-row');
+    const newRow = firstRow.cloneNode(true);
+    
+    // Clear all inputs in the new row
+    newRow.querySelectorAll('input').forEach(function(input) {
+        if (input.type === 'number' && input.name === 'part_quantity[]') {
+            input.value = '1';
+        } else if (input.readOnly) {
+            input.value = '0.00';
+        } else {
+            input.value = '';
+        }
+    });
+    
+    // Reset select dropdown
+    const partSelect = newRow.querySelector('.part-name-select');
+    if (partSelect) {
+        partSelect.selectedIndex = 0;
+    }
+    
+    // Hide custom input
+    const customInput = newRow.querySelector('.part-name-custom');
+    if (customInput) {
+        customInput.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+    }
+    
+    // Reset part number placeholder
+    const partNumberInput = newRow.querySelector('.part-number-input');
+    if (partNumberInput) {
+        partNumberInput.placeholder = 'Auto-generated';
+        partNumberInput.value = '';
+    }
+    
+    // Show remove button for new rows
+    newRow.querySelector('.remove-part-btn').style.display = 'inline-block';
+    
+    // Add event listeners to new inputs
+    addPartEventListeners(newRow);
+    
+    container.appendChild(newRow);
+    updateRemoveButtons();
+}
+
+// Remove part row
+function removePartRow(button) {
+    const partRow = button.closest('.part-row');
+    partRow.remove();
+    updatePartsTotal();
+    updateRemoveButtons();
+}
+
+// Update remove button visibility
+function updateRemoveButtons() {
+    const partRows = document.querySelectorAll('.part-row');
+    partRows.forEach(function(row, index) {
+        const removeBtn = row.querySelector('.remove-part-btn');
+        if (partRows.length > 1 && index > 0) {
+            removeBtn.style.display = 'inline-block';
+        } else {
+            removeBtn.style.display = 'none';
+        }
+    });
+}
+
+// Add event listeners to part inputs
+function addPartEventListeners(partRow) {
+    partRow.querySelector('.part-quantity').addEventListener('input', function() {
+        calculatePartCost(partRow);
+    });
+    partRow.querySelector('.part-unit-cost').addEventListener('input', function() {
+        calculatePartCost(partRow);
+    });
+    partRow.querySelector('.part-delivery-cost').addEventListener('input', function() {
+        calculatePartCost(partRow);
+    });
+    partRow.querySelector('.remove-part-btn').addEventListener('click', function() {
+        removePartRow(this);
+    });
+    
+    // Part name selection handler
+    const partSelect = partRow.querySelector('.part-name-select');
+    const customInput = partRow.querySelector('.part-name-custom');
+    const partNumberInput = partRow.querySelector('.part-number-input');
+    
+    if (partSelect) {
+        partSelect.addEventListener('change', function() {
+            if (this.value === 'Custom Part') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+                partNumberInput.placeholder = 'Enter part number';
+            } else {
+                customInput.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
+                
+                // Auto-generate part number based on vehicle and part
+                if (this.value) {
+                    generatePartNumber(partRow, this.value);
+                } else {
+                    partNumberInput.value = '';
+                    partNumberInput.placeholder = 'Auto-generated';
+                }
+            }
+        });
+    }
+    
+    if (customInput) {
+        customInput.addEventListener('input', function() {
+            if (this.value) {
+                generatePartNumber(partRow, this.value);
+            }
+        });
+    }
+}
+
+// Generate part number based on vehicle make and part name
+function generatePartNumber(partRow, partName) {
+    const vehicleMake = '{{ vehicle.make }}';
+    const partNumberInput = partRow.querySelector('.part-number-input');
+    
+    if (!partName) return;
+    
+    // Part number prefixes by vehicle make
+    const makePrefixes = {
+        'Audi': 'AUD',
+        'BMW': 'BMW',
+        'Mercedes': 'MBZ', 
+        'Mercedes-Benz': 'MBZ',
+        'Volkswagen': 'VW',
+        'VW': 'VW',
+        'Porsche': 'POR',
+        'Toyota': 'TOY',
+        'Honda': 'HON',
+        'Nissan': 'NIS',
+        'Ford': 'FOR',
+        'Mazda': 'MAZ',
+        'Subaru': 'SUB',
+        'Mitsubishi': 'MIT',
+        'Hyundai': 'HYU',
+        'Kia': 'KIA',
+        'Lexus': 'LEX',
+        'Infiniti': 'INF',
+        'Acura': 'ACU'
+    };
+    
+    // Part category codes
+    const partCodes = {
+        // Engine
+        'Air Filter': 'AF',
+        'Oil Filter': 'OF',
+        'Fuel Filter': 'FF',
+        'Spark Plugs': 'SP',
+        'Ignition Coils': 'IC',
+        'Timing Belt': 'TB',
+        'Water Pump': 'WP',
+        'Thermostat': 'TH',
+        'Radiator': 'RAD',
+        'Turbocharger': 'TC',
+        'Intercooler': 'INT',
+        'Mass Air Flow Sensor': 'MAF',
+        'Oxygen Sensor': 'O2S',
+        
+        // Suspension
+        'Shock Absorbers': 'SHK',
+        'Struts': 'STR',
+        'Springs': 'SPR',
+        'Bushings': 'BSH',
+        'Ball Joints': 'BJ',
+        'Tie Rod Ends': 'TRE',
+        'Control Arms': 'CA',
+        'Anti-Roll Bar Links': 'ARB',
+        'Steering Rack': 'SR',
+        'Power Steering Pump': 'PSP',
+        
+        // Brakes
+        'Brake Pads': 'BP',
+        'Brake Discs/Rotors': 'BD',
+        'Brake Calipers': 'BC',
+        'Brake Lines/Hoses': 'BL',
+        'Brake Fluid': 'BF',
+        'Master Cylinder': 'MC',
+        'ABS Sensor': 'ABS',
+        
+        // Transmission
+        'Transmission Filter': 'TF',
+        'Transmission Fluid': 'TFL',
+        'Clutch Kit': 'CK',
+        'Flywheel': 'FW',
+        'CV Joints': 'CV',
+        'Driveshaft': 'DS',
+        
+        // Exhaust
+        'Catalytic Converter': 'CAT',
+        'Exhaust Manifold': 'EM',
+        'Muffler': 'MUF',
+        'Exhaust Pipe': 'EP',
+        'Lambda Sensor': 'LAM',
+        
+        // Electrical
+        'Battery': 'BAT',
+        'Alternator': 'ALT',
+        'Starter Motor': 'STM',
+        'ECU/PCM': 'ECU',
+        'Wiring Harness': 'WH',
+        'Sensors': 'SEN',
+        
+        // Performance
+        'Cold Air Intake': 'CAI',
+        'Performance Exhaust': 'PEX',
+        'Blow-off Valve': 'BOV',
+        'Chip/Tune': 'CHI',
+        'Coilovers': 'COI',
+        'Sway Bars': 'SWB',
+        'Brake Upgrade Kit': 'BUK',
+        
+        // Fluids
+        'Engine Oil': 'EO',
+        'Coolant': 'COO',
+        'Power Steering Fluid': 'PSF',
+        'Differential Oil': 'DO'
+    };
+    
+    const makePrefix = makePrefixes[vehicleMake] || 'GEN';
+    const partCode = partCodes[partName] || 'OTH';
+    const randomNum = Math.floor(Math.random() * 9000) + 1000; // 4-digit random number
+    
+    const partNumber = `${makePrefix}-${partCode}-${randomNum}`;
+    partNumberInput.value = partNumber;
+}
+
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Service cost calculation
+    document.getElementById('service_price').addEventListener('input', calculateServiceCost);
+    
+    // Service type change handler - filter parts based on service type
+    document.getElementById('service_type').addEventListener('change', function() {
+        filterPartsByServiceType(this.value);
+    });
+    
+    // Add part button
+    document.getElementById('add-part-btn').addEventListener('click', addPartRow);
+    
+    // Initial part row event listeners
+    document.querySelectorAll('.part-row').forEach(function(partRow) {
+        addPartEventListeners(partRow);
+    });
+    
+    // Set default service price
+    if (!document.getElementById('service_price').value) {
+        document.getElementById('service_price').value = '5000.00'; // Default service price in KSH
+        calculateServiceCost();
+    }
+    
+    // Initial calculations
+    updatePartsTotal();
+    updateRemoveButtons();
+});
+
+// Filter parts based on service type
+function filterPartsByServiceType(serviceType) {
+    const partSelects = document.querySelectorAll('.part-name-select');
+    
+    // Define relevant parts for each service type
+    const serviceTypeParts = {
+        'Engine Tune': ['Air Filter', 'Oil Filter', 'Spark Plugs', 'Ignition Coils', 'Mass Air Flow Sensor', 'Oxygen Sensor', 'Engine Oil', 'Chip/Tune'],
+        'ECU Remap': ['ECU/PCM', 'Chip/Tune', 'Mass Air Flow Sensor', 'Oxygen Sensor', 'Performance Exhaust'],
+        'Suspension Work': ['Shock Absorbers', 'Struts', 'Springs', 'Bushings', 'Ball Joints', 'Tie Rod Ends', 'Control Arms', 'Coilovers'],
+        'Brake Service': ['Brake Pads', 'Brake Discs/Rotors', 'Brake Calipers', 'Brake Lines/Hoses', 'Brake Fluid', 'Master Cylinder', 'ABS Sensor'],
+        'Transmission': ['Transmission Filter', 'Transmission Fluid', 'Clutch Kit', 'Flywheel', 'CV Joints', 'Driveshaft'],
+        'Exhaust System': ['Catalytic Converter', 'Exhaust Manifold', 'Muffler', 'Exhaust Pipe', 'Lambda Sensor', 'Performance Exhaust'],
+        'Turbo/Supercharger': ['Turbocharger', 'Intercooler', 'Blow-off Valve', 'Air Filter', 'Performance Exhaust'],
+        'Oil Change': ['Engine Oil', 'Oil Filter', 'Air Filter'],
+        'Performance Upgrade': ['Cold Air Intake', 'Performance Exhaust', 'Blow-off Valve', 'Chip/Tune', 'Coilovers', 'Sway Bars', 'Brake Upgrade Kit']
+    };
+    
+    partSelects.forEach(function(select) {
+        const options = select.querySelectorAll('option');
+        const relevantParts = serviceTypeParts[serviceType] || [];
+        
+        // Reset all options visibility
+        options.forEach(function(option) {
+            if (option.value === '' || option.parentElement.tagName === 'OPTGROUP') {
+                option.style.display = 'block';
+                return;
+            }
+            
+            if (serviceType === '' || relevantParts.includes(option.value)) {
+                option.style.display = 'block';
+                option.style.fontWeight = relevantParts.includes(option.value) ? 'bold' : 'normal';
+                option.style.backgroundColor = relevantParts.includes(option.value) ? '#e3f2fd' : 'white';
+            } else {
+                option.style.display = 'block'; // Keep all options visible but highlight relevant ones
+                option.style.fontWeight = 'normal';
+                option.style.backgroundColor = 'white';
+            }
+        });
+        
+        // Highlight the optgroups that contain relevant parts
+        const optgroups = select.querySelectorAll('optgroup');
+        optgroups.forEach(function(optgroup) {
+            const groupOptions = Array.from(optgroup.querySelectorAll('option'));
+            const hasRelevantParts = groupOptions.some(opt => relevantParts.includes(opt.value));
+            optgroup.style.backgroundColor = hasRelevantParts ? '#f0f8ff' : 'white';
+        });
+    });
+}
+</script>
+{% endblock %}

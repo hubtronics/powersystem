@@ -1,0 +1,16 @@
+[Unit]
+Description=Power Tune Auto Garage Management System
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/powertune
+Environment="PATH=/var/www/powertune/venv/bin"
+ExecStart=/var/www/powertune/venv/bin/gunicorn --config gunicorn.conf.py wsgi:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

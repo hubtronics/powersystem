@@ -1,0 +1,200 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Add Part{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ url_for('service_visit_detail', visit_id=visit.id) }}" class="btn btn-outline-secondary me-3">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+        <h3 class="mb-1">Add Part to Service</h3>
+        <p class="text-muted mb-0">{{ visit.service_type }} - {{ visit.vehicle.make }} {{ visit.vehicle.model }} ({{ visit.vehicle.plate_number }})</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8">
+        <div class="stat-card">
+            <form method="post" class="needs-validation" novalidate>
+                <!-- Part Information -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-cog me-2 text-primary"></i>Part Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="part_name" class="form-label fw-medium">Part Name *</label>
+                        <input type="text" name="part_name" id="part_name" class="form-control form-control-lg" placeholder="e.g., Engine Oil, Brake Pads" required>
+                        <div class="invalid-feedback">
+                            Please provide a part name.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="part_number" class="form-label fw-medium">Part Number</label>
+                        <input type="text" name="part_number" id="part_number" class="form-control form-control-lg" placeholder="e.g., BMW-12345">
+                    </div>
+                </div>
+
+                <!-- Pricing Information -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-money-bill me-2 text-primary"></i>Pricing Information
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="quantity" class="form-label fw-medium">Quantity *</label>
+                        <input type="number" name="quantity" id="quantity" class="form-control form-control-lg" min="1" value="1" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid quantity.
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="unit_cost" class="form-label fw-medium">Price *</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">KSH</span>
+                            <input type="number" name="unit_cost" id="unit_cost" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        <div class="invalid-feedback">
+                            Please provide a valid price.
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="delivery_cost" class="form-label fw-medium">Shipping Cost</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">KSH</span>
+                            <input type="number" name="delivery_cost" id="delivery_cost" class="form-control" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <small class="text-muted">Optional shipping charges</small>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="total_cost_display" class="form-label fw-medium">Total Cost</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-success text-white">KSH</span>
+                            <input type="text" id="total_cost_display" class="form-control fw-bold" readonly placeholder="0.00" style="background-color: #e8f5e8;">
+                        </div>
+                        <small class="text-muted">Calculated automatically</small>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-success px-4 btn-lg">
+                        <i class="fas fa-plus me-2"></i>Add Part
+                    </button>
+                    <a href="{{ url_for('service_visit_detail', visit_id=visit.id) }}" class="btn btn-outline-secondary px-4 btn-lg">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <!-- Service Visit Summary -->
+        <div class="stat-card mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-wrench me-2 text-primary"></i>Service Summary
+            </h6>
+            <div class="service-summary">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="service-icon me-3">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 45px; height: 45px;">
+                            <i class="fas fa-wrench"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ visit.service_type }}</div>
+                        <small class="text-muted">{{ visit.visit_date.strftime('%B %d, %Y') }}</small>
+                    </div>
+                </div>
+                <div class="service-details">
+                    <div class="detail-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Service Cost</span>
+                        <span class="fw-medium">KSH {{ '{:,.2f}'.format(visit.service_price or visit.labor_cost) }}</span>
+                    </div>
+                    <div class="detail-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Parts Cost</span>
+                        <span class="fw-medium">KSH {{ '{:,.2f}'.format(visit.parts_used|sum(attribute='total_part_cost')) if visit.parts_used else '0.00' }}</span>
+                    </div>
+                    <div class="detail-item d-flex justify-content-between">
+                        <span class="text-muted">Total Cost</span>
+                        <span class="fw-bold text-success">KSH {{ '{:,.2f}'.format(visit.total_cost) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parts Already Added -->
+        {% if visit.parts_used %}
+        <div class="stat-card">
+            <h6 class="mb-3">
+                <i class="fas fa-list me-2 text-success"></i>Parts Added
+            </h6>
+            <div class="parts-list">
+                {% for part in visit.parts_used %}
+                <div class="part-item d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div>
+                        <div class="fw-medium">{{ part.part_name }}</div>
+                        <small class="text-muted">Qty: {{ part.quantity }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-medium text-success">KSH {{ '{:,.2f}'.format(part.total_part_cost) }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Calculate total cost automatically
+function calculateTotalCost() {
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const unitCost = parseFloat(document.getElementById('unit_cost').value) || 0;
+    const deliveryCost = parseFloat(document.getElementById('delivery_cost').value) || 0;
+    const total = (quantity * unitCost) + deliveryCost;
+    document.getElementById('total_cost_display').value = total.toFixed(2);
+}
+
+document.getElementById('quantity').addEventListener('input', calculateTotalCost);
+document.getElementById('unit_cost').addEventListener('input', calculateTotalCost);
+document.getElementById('delivery_cost').addEventListener('input', calculateTotalCost);
+
+// Auto-format part number
+document.getElementById('part_number').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+});
+</script>
+{% endblock %}
