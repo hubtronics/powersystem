@@ -5,44 +5,41 @@
 {% block content %}
 <!-- Page Header -->
 <div class="d-flex align-items-center mb-4">
-    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary me-3">
+    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary me-3 flex-shrink-0">
         <i class="fas fa-arrow-left"></i>
     </a>
-    <div>
+    <div class="min-width-0 flex-grow-1">
         <h3 class="mb-1">{% if edit_mode %}Edit Vehicle{% else %}Add New Vehicle{% endif %}</h3>
-        <p class="text-muted mb-0">{% if edit_mode %}Update vehicle and customer details{% else %}Register a new vehicle with customer and vehicle details{% endif %}</p>
+        <p class="text-muted mb-0 small">{% if edit_mode %}Update vehicle and customer details{% else %}Register a new vehicle with customer details{% endif %}</p>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-xl-8">
+    <div class="col-12 col-xl-8">
         <div class="stat-card">
             <form method="post" class="needs-validation" novalidate>
                 <!-- Customer Selection -->
-                <div class="row">
-                    <div class="col-12 mb-4">
-                        <h5 class="mb-3">
-                            <i class="fas fa-user me-2 text-primary"></i>Customer Information
-                        </h5>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="customer_id" class="form-label fw-medium">Select Customer *</label>
-                        <select name="customer_id" id="customer_id" class="form-select" required>
-                            <option value="">Choose a customer...</option>
-                            {% for customer in customers %}
-                            <option value="{{ customer.id }}" {% if edit_mode and vehicle.customer_id == customer.id %}selected{% endif %}>{{ customer.name }} - {{ customer.phone }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="invalid-feedback">
-                            Please select a customer.
+                <div class="mb-4">
+                    <h5 class="mb-3">
+                        <i class="fas fa-user me-2 text-primary"></i>Customer Information
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-12 col-md-8">
+                            <label for="customer_id" class="form-label fw-medium">Select Customer *</label>
+                            <select name="customer_id" id="customer_id" class="form-select" required>
+                                <option value="">Choose a customer...</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}" {% if edit_mode and vehicle.customer_id == customer.id %}selected{% endif %}>{{ customer.name }} - {{ customer.phone }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select a customer.
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-end h-100">
-                            <a href="{{ url_for('customers_new') }}" class="btn btn-outline-primary">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label d-none d-md-block">&nbsp;</label>
+                            <a href="{{ url_for('customers_new') }}" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-plus me-2"></i>Add New Customer
                             </a>
                         </div>
@@ -50,110 +47,106 @@
                 </div>
 
                 <!-- Vehicle Details -->
-                <div class="row">
-                    <div class="col-12 mb-4">
-                        <h5 class="mb-3 mt-4">
-                            <i class="fas fa-car me-2 text-primary"></i>Vehicle Details
-                        </h5>
-                    </div>
-                </div>
+                <!-- Vehicle Details -->
+                <div class="mb-4">
+                    <h5 class="mb-3 mt-4">
+                        <i class="fas fa-car me-2 text-primary"></i>Vehicle Details
+                    </h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="plate_number" class="form-label fw-medium">License Plate Number *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-id-card"></i>
+                                </span>
+                                <input type="text" name="plate_number" id="plate_number" class="form-control" placeholder="ABC-1234" style="text-transform: uppercase;" value="{{ vehicle.plate_number if edit_mode else '' }}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid plate number.
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="plate_number" class="form-label fw-medium">License Plate Number *</label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-id-card"></i>
-                            </span>
-                            <input type="text" name="plate_number" id="plate_number" class="form-control" placeholder="ABC-1234" style="text-transform: uppercase;" value="{{ vehicle.plate_number if edit_mode else '' }}" required>
-                            <div class="invalid-feedback">
-                                Please provide a valid plate number.
+                        <div class="col-12 col-md-6">
+                            <label for="vin" class="form-label fw-medium">VIN Number *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-barcode"></i>
+                                </span>
+                                <input type="text" name="vin" id="vin" class="form-control" placeholder="17-character VIN" maxlength="17" value="{{ vehicle.vin if edit_mode else '' }}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid VIN number.
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="vin" class="form-label fw-medium">VIN Number *</label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-barcode"></i>
-                            </span>
-                            <input type="text" name="vin" id="vin" class="form-control" placeholder="17-character VIN" maxlength="17" value="{{ vehicle.vin if edit_mode else '' }}" required>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label for="make" class="form-label fw-medium">Make *</label>
+                            <select name="make" id="make" class="form-select" required onchange="updateModels()">
+                                <option value="">Select Make</option>
+                                {% for make in makes %}
+                                <option value="{{ make }}" {% if edit_mode and vehicle.make == make %}selected{% endif %}>{{ make }}</option>
+                                {% endfor %}
+                                <option value="Other" {% if edit_mode and vehicle.make == 'Other' %}selected{% endif %}>Other (Specify)</option>
+                            </select>
+                            <input type="text" name="custom_make" id="custom_make" class="form-control mt-2" placeholder="Enter custom make" style="display: none;" value="{{ vehicle.make if edit_mode and vehicle.make not in makes else '' }}">
                             <div class="invalid-feedback">
-                                Please provide a valid VIN number.
+                                Please select or specify a make.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="model" class="form-label fw-medium">Model *</label>
+                            <select name="model" id="model" class="form-select" required>
+                                <option value="">Select Model</option>
+                            </select>
+                            <input type="text" name="custom_model" id="custom_model" class="form-control mt-2" placeholder="Enter custom model" style="display: none;" value="{{ vehicle.model if edit_mode else '' }}">
+                            <div class="invalid-feedback">
+                                Please select or specify a model.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="year" class="form-label fw-medium">Year</label>
+                            <select name="year" id="year" class="form-select">
+                                <option value="">Select Year</option>
+                                {% for year in range(2024, 1989, -1) %}
+                                <option value="{{ year }}" {% if edit_mode and vehicle.year == year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="color" class="form-label fw-medium">Color</label>
+                            <select name="color" id="color" class="form-select">
+                                <option value="">Select Color</option>
+                                <option value="Black" {% if edit_mode and vehicle.color == 'Black' %}selected{% endif %}>Black</option>
+                                <option value="White" {% if edit_mode and vehicle.color == 'White' %}selected{% endif %}>White</option>
+                                <option value="Silver" {% if edit_mode and vehicle.color == 'Silver' %}selected{% endif %}>Silver</option>
+                                <option value="Gray" {% if edit_mode and vehicle.color == 'Gray' %}selected{% endif %}>Gray</option>
+                                <option value="Blue" {% if edit_mode and vehicle.color == 'Blue' %}selected{% endif %}>Blue</option>
+                                <option value="Red" {% if edit_mode and vehicle.color == 'Red' %}selected{% endif %}>Red</option>
+                                <option value="Green" {% if edit_mode and vehicle.color == 'Green' %}selected{% endif %}>Green</option>
+                                <option value="Yellow" {% if edit_mode and vehicle.color == 'Yellow' %}selected{% endif %}>Yellow</option>
+                                <option value="Other" {% if edit_mode and vehicle.color == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="mileage" class="form-label fw-medium">Current Mileage</label>
+                            <div class="input-group">
+                                <input type="number" name="mileage" id="mileage" class="form-control" placeholder="0">
+                                <span class="input-group-text">miles</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="make" class="form-label fw-medium">Make *</label>
-                        <select name="make" id="make" class="form-select" required>
-                            <option value="">Select Make</option>
-                            <option value="BMW" {% if edit_mode and vehicle.make == 'BMW' %}selected{% endif %}>BMW</option>
-                            <option value="Mercedes-Benz" {% if edit_mode and vehicle.make == 'Mercedes-Benz' %}selected{% endif %}>Mercedes-Benz</option>
-                            <option value="Audi" {% if edit_mode and vehicle.make == 'Audi' %}selected{% endif %}>Audi</option>
-                            <option value="Volkswagen" {% if edit_mode and vehicle.make == 'Volkswagen' %}selected{% endif %}>Volkswagen</option>
-                            <option value="Porsche" {% if edit_mode and vehicle.make == 'Porsche' %}selected{% endif %}>Porsche</option>
-                            <option value="Toyota" {% if edit_mode and vehicle.make == 'Toyota' %}selected{% endif %}>Toyota</option>
-                            <option value="Honda" {% if edit_mode and vehicle.make == 'Honda' %}selected{% endif %}>Honda</option>
-                            <option value="Nissan" {% if edit_mode and vehicle.make == 'Nissan' %}selected{% endif %}>Nissan</option>
-                            <option value="Ford" {% if edit_mode and vehicle.make == 'Ford' %}selected{% endif %}>Ford</option>
-                            <option value="Chevrolet" {% if edit_mode and vehicle.make == 'Chevrolet' %}selected{% endif %}>Chevrolet</option>
-                            <option value="Other" {% if edit_mode and vehicle.make == 'Other' %}selected{% endif %}>Other</option>
-                        </select>
-                        <div class="invalid-feedback">
-                            Please select a make.
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="model" class="form-label fw-medium">Model *</label>
-                        <input type="text" name="model" id="model" class="form-control" placeholder="e.g., M3, AMG, RS6" value="{{ vehicle.model if edit_mode else '' }}" required>
-                        <div class="invalid-feedback">
-                            Please provide a model.
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="year" class="form-label fw-medium">Year</label>
-                        <select name="year" id="year" class="form-select">
-                            <option value="">Select Year</option>
-                            {% for year in range(2024, 1989, -1) %}
-                            <option value="{{ year }}" {% if edit_mode and vehicle.year == year %}selected{% endif %}>{{ year }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="color" class="form-label fw-medium">Color</label>
-                        <select name="color" id="color" class="form-select">
-                            <option value="">Select Color</option>
-                            <option value="Black" {% if edit_mode and vehicle.color == 'Black' %}selected{% endif %}>Black</option>
-                            <option value="White" {% if edit_mode and vehicle.color == 'White' %}selected{% endif %}>White</option>
-                            <option value="Silver" {% if edit_mode and vehicle.color == 'Silver' %}selected{% endif %}>Silver</option>
-                            <option value="Gray" {% if edit_mode and vehicle.color == 'Gray' %}selected{% endif %}>Gray</option>
-                            <option value="Blue" {% if edit_mode and vehicle.color == 'Blue' %}selected{% endif %}>Blue</option>
-                            <option value="Red" {% if edit_mode and vehicle.color == 'Red' %}selected{% endif %}>Red</option>
-                            <option value="Green" {% if edit_mode and vehicle.color == 'Green' %}selected{% endif %}>Green</option>
-                            <option value="Yellow" {% if edit_mode and vehicle.color == 'Yellow' %}selected{% endif %}>Yellow</option>
-                            <option value="Other" {% if edit_mode and vehicle.color == 'Other' %}selected{% endif %}>Other</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="mileage" class="form-label fw-medium">Current Mileage</label>
-                        <div class="input-group">
-                            <input type="number" name="mileage" id="mileage" class="form-control" placeholder="0">
-                            <span class="input-group-text">miles</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-3 mt-4">
+                <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
                     <button type="submit" class="btn btn-primary px-4">
                         <i class="fas fa-save me-2"></i>{% if edit_mode %}Update Vehicle{% else %}Save Vehicle{% endif %}
                     </button>
@@ -247,6 +240,79 @@ document.getElementById('vin').addEventListener('input', function(e) {
 // Plate number formatting
 document.getElementById('plate_number').addEventListener('input', function(e) {
     e.target.value = e.target.value.toUpperCase();
+});
+
+// Make/Model functionality
+function updateModels() {
+    const makeSelect = document.getElementById('make');
+    const modelSelect = document.getElementById('model');
+    const customMake = document.getElementById('custom_make');
+    const customModel = document.getElementById('custom_model');
+    
+    // Show/hide custom make input
+    if (makeSelect.value === 'Other') {
+        customMake.style.display = 'block';
+        customMake.required = true;
+        makeSelect.required = false;
+    } else {
+        customMake.style.display = 'none';
+        customMake.required = false;
+        makeSelect.required = true;
+    }
+    
+    // Clear model options
+    modelSelect.innerHTML = '<option value="">Select Model</option>';
+    customModel.style.display = 'none';
+    customModel.required = false;
+    modelSelect.required = true;
+    
+    if (makeSelect.value && makeSelect.value !== 'Other') {
+        // Fetch models for selected make
+        fetch(`/api/models/${makeSelect.value}`)
+            .then(response => response.json())
+            .then(models => {
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+                // Add "Other" option
+                const otherOption = document.createElement('option');
+                otherOption.value = 'Other';
+                otherOption.textContent = 'Other (Specify)';
+                modelSelect.appendChild(otherOption);
+            })
+            .catch(error => {
+                console.error('Error fetching models:', error);
+                // Add fallback "Other" option
+                const otherOption = document.createElement('option');
+                otherOption.value = 'Other';
+                otherOption.textContent = 'Other (Specify)';
+                modelSelect.appendChild(otherOption);
+            });
+    }
+}
+
+// Model change handler
+document.getElementById('model').addEventListener('change', function() {
+    const modelSelect = this;
+    const customModel = document.getElementById('custom_model');
+    
+    if (modelSelect.value === 'Other') {
+        customModel.style.display = 'block';
+        customModel.required = true;
+        modelSelect.required = false;
+    } else {
+        customModel.style.display = 'none';
+        customModel.required = false;
+        modelSelect.required = true;
+    }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateModels();
 });
 </script>
 {% endblock %}

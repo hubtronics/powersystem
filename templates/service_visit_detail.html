@@ -4,26 +4,50 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="d-flex align-items-center mb-4">
-    <a href="{{ url_for('vehicle_detail', vehicle_id=visit.vehicle.id) }}" class="btn btn-outline-secondary me-3">
-        <i class="fas fa-arrow-left"></i>
-    </a>
-    <div class="flex-grow-1">
-        <h3 class="mb-1">{{ visit.service_type }} - Service Details</h3>
-        <p class="text-muted mb-0">{{ visit.vehicle.make }} {{ visit.vehicle.model }} ({{ visit.vehicle.plate_number }}) • {{ visit.visit_date.strftime('%B %d, %Y') }}</p>
+<div class="mb-4">
+    <!-- Mobile Header -->
+    <div class="d-flex align-items-center mb-3">
+        <a href="{{ url_for('vehicle_detail', vehicle_id=visit.vehicle.id) }}" class="btn btn-outline-secondary me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="flex-grow-1 min-width-0">
+            <h3 class="mb-1 text-truncate">{{ visit.service_type }}</h3>
+            <p class="text-muted mb-0 small">{{ visit.vehicle.make }} {{ visit.vehicle.model }} • {{ visit.visit_date.strftime('%b %d, %Y') }}</p>
+        </div>
     </div>
-    <div class="btn-group">
-        <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success">
+    
+    <!-- Action Buttons - Mobile Optimized -->
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success flex-fill flex-sm-grow-0">
             <i class="fas fa-plus me-2"></i>Add Parts
         </a>
-        <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-primary" target="_blank">
-            <i class="fas fa-print me-2"></i>Print Invoice
-        </a>
-        <form method="POST" action="{{ url_for('service_visit_delete', visit_id=visit.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this service visit and all associated parts?')">
-            <button type="submit" class="btn btn-outline-danger">
-                <i class="fas fa-trash me-2"></i>Delete Visit
+        <div class="dropdown flex-fill flex-sm-grow-0">
+            <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-share me-2"></i>Share & Print
             </button>
-        </form>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('print_service_visit', visit_id=visit.id) }}" target="_blank">
+                    <i class="fas fa-print me-2"></i>Print Invoice
+                </a></li>
+                <li><a class="dropdown-item" href="{{ url_for('share_whatsapp', visit_id=visit.id) }}" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i>Share on WhatsApp
+                </a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <form method="POST" action="{{ url_for('service_visit_delete', visit_id=visit.id) }}" onsubmit="return confirm('Are you sure you want to delete this service visit and all associated parts?')">
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="fas fa-trash me-2"></i>Delete Visit
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -35,8 +59,8 @@
             <h5 class="mb-3">
                 <i class="fas fa-info-circle me-2 text-primary"></i>Service Summary
             </h5>
-            <div class="row">
-                <div class="col-md-6">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
                     <div class="info-item mb-3">
                         <label class="text-muted small">Service Type</label>
                         <div class="fw-medium">{{ visit.service_type }}</div>
@@ -50,7 +74,7 @@
                         <div class="fw-medium">{{ visit.technician or 'Not assigned' }}</div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="info-item mb-3">
                         <label class="text-muted small">Status</label>
                         <div>
@@ -61,11 +85,11 @@
                     </div>
                     <div class="info-item mb-3">
                         <label class="text-muted small">Labor Hours</label>
-                        <div class="fw-medium">{{ visit.labor_hours }} hours @ ${{ '{:,.2f}'.format(visit.labor_rate) }}/hour</div>
+                        <div class="fw-medium">{{ visit.labor_hours }} hours @ KSh {{ '{:,.2f}'.format(visit.labor_rate) }}/hour</div>
                     </div>
                     <div class="info-item mb-3">
                         <label class="text-muted small">Total Cost</label>
-                        <div class="fw-bold text-success fs-5">${{ '{:,.2f}'.format(visit.total_cost) }}</div>
+                        <div class="fw-bold text-success fs-5">KSh {{ '{:,.2f}'.format(visit.total_cost) }}</div>
                     </div>
                 </div>
             </div>
@@ -76,7 +100,7 @@
             <h5 class="mb-3">
                 <i class="fas fa-clipboard-list me-2 text-primary"></i>Service Details
             </h5>
-            
+
             {% if visit.customer_complaint %}
             <div class="detail-section mb-4">
                 <h6 class="text-danger">
@@ -124,17 +148,18 @@
 
         <!-- Parts Used -->
         <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
                 <h5 class="mb-0">
                     <i class="fas fa-cog me-2 text-primary"></i>Parts Used
                 </h5>
-                <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success btn-sm">
+                <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success btn-sm w-100 w-sm-auto">
                     <i class="fas fa-plus me-2"></i>Add Part
                 </a>
             </div>
 
             {% if parts %}
-            <div class="table-responsive">
+            <!-- Desktop Table View -->
+            <div class="table-responsive d-none d-lg-block">
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
@@ -160,8 +185,8 @@
                             </td>
                             <td>{{ part.supplier or '-' }}</td>
                             <td>{{ part.quantity }}</td>
-                            <td>${{ '{:,.2f}'.format(part.unit_cost) }}</td>
-                            <td>${{ '{:,.2f}'.format(part.delivery_cost) }}</td>
+                            <td>KSh {{ '{:,.2f}'.format(part.unit_cost) }}</td>
+                            <td>KSh {{ '{:,.2f}'.format(part.delivery_cost) }}</td>
                             <td class="fw-bold text-success">KSH {{ '{:,.2f}'.format(part.total_part_cost) }}</td>
                             <td>
                                 <form method="POST" action="{{ url_for('part_delete', part_id=part.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this part?')">
@@ -173,10 +198,71 @@
                         </tr>
                         {% endfor %}
                     </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="d-lg-none">
+                {% for part in parts %}
+                <div class="card mb-3 border-0 shadow-sm part-card">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold text-primary">{{ part.part_number }}</h6>
+                                <p class="mb-1 fw-medium">{{ part.part_name }}</p>
+                                {% if part.part_description %}
+                                <small class="text-muted">{{ part.part_description }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link btn-sm p-1" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <form method="POST" action="{{ url_for('part_delete', part_id=part.id) }}" onsubmit="return confirm('Are you sure you want to delete this part?')">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash me-2"></i>Delete Part
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2 text-sm">
+                            <div class="col-6">
+                                <strong>Supplier:</strong><br>
+                                <span>{{ part.supplier or 'Not specified' }}</span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Quantity:</strong><br>
+                                <span>{{ part.quantity }}</span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Unit Cost:</strong><br>
+                                <span>KSh {{ '{:,.2f}'.format(part.unit_cost) }}</span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Delivery:</strong><br>
+                                <span>KSh {{ '{:,.2f}'.format(part.delivery_cost) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                            <strong class="text-muted">Total Cost:</strong>
+                            <strong class="text-success fs-6">KSh {{ '{:,.2f}'.format(part.total_part_cost) }}</strong>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+                    </tbody>
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="6" class="text-end fw-bold">Total Parts Cost:</td>
-                            <td class="fw-bold text-success">KSH {{ '{:,.2f}'.format(parts|sum(attribute='total_part_cost')) }}</td>
+                            <td class="fw-bold text-success">KSH {{
+                                '{:,.2f}'.format(parts|sum(attribute='total_part_cost')) }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -204,7 +290,8 @@
             </h6>
             <div class="d-flex align-items-center mb-3">
                 <div class="vehicle-icon me-3">
-                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white"
+                        style="width: 50px; height: 50px;">
                         <i class="fas fa-car"></i>
                     </div>
                 </div>
@@ -224,7 +311,8 @@
                 </div>
                 <div class="detail-item d-flex justify-content-between">
                     <span class="text-muted">Mileage</span>
-                    <span class="fw-medium">{{ '{:,}'.format(visit.vehicle.mileage) if visit.vehicle.mileage else 'N/A' }}</span>
+                    <span class="fw-medium">{{ '{:,}'.format(visit.vehicle.mileage) if visit.vehicle.mileage else 'N/A'
+                        }}</span>
                 </div>
             </div>
         </div>
@@ -236,7 +324,8 @@
             </h6>
             <div class="d-flex align-items-center mb-3">
                 <div class="avatar-sm me-3">
-                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px;">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold"
+                        style="width: 40px; height: 40px;">
                         {{ visit.vehicle.customer.name[0].upper() }}
                     </div>
                 </div>
@@ -265,15 +354,16 @@
             <div class="cost-breakdown">
                 <div class="cost-item d-flex justify-content-between mb-2 pb-2 border-bottom">
                     <span class="text-muted">Labor Cost</span>
-                    <span class="fw-medium">${{ '{:,.2f}'.format(visit.labor_cost) }}</span>
+                    <span class="fw-medium">KSh {{ '{:,.2f}'.format(visit.labor_cost) }}</span>
                 </div>
                 <div class="cost-item d-flex justify-content-between mb-2 pb-2 border-bottom">
                     <span class="text-muted">Parts Cost</span>
-                    <span class="fw-medium">${{ '{:,.2f}'.format(parts|sum(attribute='total_part_cost')) if parts else '0.00' }}</span>
+                    <span class="fw-medium">KSh {{ '{:,.2f}'.format(parts|sum(attribute='total_part_cost')) if parts
+                        else '0.00' }}</span>
                 </div>
                 <div class="cost-item d-flex justify-content-between">
                     <span class="fw-bold">Total Cost</span>
-                    <span class="fw-bold text-success fs-5">${{ '{:,.2f}'.format(visit.total_cost) }}</span>
+                    <span class="fw-bold text-success fs-5">KSh {{ '{:,.2f}'.format(visit.total_cost) }}</span>
                 </div>
             </div>
         </div>
@@ -287,17 +377,81 @@
                 <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-success btn-sm">
                     <i class="fas fa-plus me-2"></i>Add Parts
                 </a>
-                <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-primary btn-sm"
+                    target="_blank">
                     <i class="fas fa-print me-2"></i>Print Invoice
                 </a>
-                <a href="{{ url_for('vehicle_detail', vehicle_id=visit.vehicle.id) }}" class="btn btn-outline-secondary btn-sm">
+                <a href="{{ url_for('vehicle_detail', vehicle_id=visit.vehicle.id) }}"
+                    class="btn btn-outline-secondary btn-sm">
                     <i class="fas fa-car me-2"></i>View Vehicle
                 </a>
-                <a href="{{ url_for('customer_complete_report', customer_id=visit.vehicle.customer.id) }}" class="btn btn-outline-info btn-sm">
+                <a href="{{ url_for('customer_complete_report', customer_id=visit.vehicle.customer.id) }}"
+                    class="btn btn-outline-info btn-sm">
                     <i class="fas fa-file-alt me-2"></i>Customer Report
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Mobile-specific enhancements for service visit detail */
+.part-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary-color);
+}
+
+.part-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.info-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .detail-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-section .p-3 {
+        padding: 1rem !important;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .cost-breakdown {
+        font-size: 0.9rem;
+    }
+    
+    .cost-item {
+        padding: 0.5rem 0;
+    }
+    
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .part-card .card-body {
+        padding: 1rem !important;
+    }
+    
+    .part-card .row.g-2 {
+        font-size: 0.85rem;
+    }
+    
+    .part-card h6 {
+        font-size: 1rem;
+    }
+}
+</style>
 {% endblock %}

@@ -4,12 +4,12 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
     <div>
         <h3 class="mb-1">Customer Management</h3>
         <p class="text-muted mb-0">Manage all your customers and their information</p>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('customers_new') }}">
+    <a class="btn btn-primary w-100 w-md-auto" href="{{ url_for('customers_new') }}">
         <i class="fas fa-plus me-2"></i>Add New Customer
     </a>
 </div>
@@ -17,7 +17,7 @@
 <!-- Search and Filter -->
 <div class="stat-card mb-4">
     <div class="row g-3">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="input-group">
                 <span class="input-group-text">
                     <i class="fas fa-search"></i>
@@ -25,14 +25,14 @@
                 <input type="text" class="form-control" placeholder="Search customers..." id="searchInput">
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <select class="form-select">
                 <option selected>All Status</option>
                 <option>Active</option>
                 <option>Inactive</option>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <select class="form-select">
                 <option selected>Sort by Name</option>
                 <option>Sort by Date</option>
@@ -84,8 +84,24 @@
         </div>
     </div>
     
+<!-- Customers Table -->
+<div class="stat-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">All Customers</h5>
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary active" id="listView">
+                <i class="fas fa-list"></i>
+            </button>
+            <button class="btn btn-outline-secondary" id="cardView">
+                <i class="fas fa-th-large"></i>
+            </button>
+        </div>
+    </div>
+    
     {% if customers %}
-    <div class="table-responsive">
+    
+    <!-- Desktop Table View -->
+    <div class="table-responsive d-none d-lg-block" id="tableView">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
@@ -169,15 +185,93 @@
         </table>
     </div>
 
+    <!-- Mobile Card View -->
+    <div class="d-lg-none" id="mobileCards">
+        {% for c in customers %}
+        <div class="card mb-3 border-0 shadow-sm customer-card">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <div class="avatar-sm me-3 flex-shrink-0">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 45px; height: 45px;">
+                                {{ c.name[0].upper() if c.name else 'N' }}
+                            </div>
+                        </div>
+                        <div class="min-width-0 flex-grow-1">
+                            <h6 class="mb-1 fw-bold text-truncate">{{ c.name }}</h6>
+                            <small class="text-muted">ID: #{{ '%04d'|format(loop.index) }}</small>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link btn-sm p-1" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('customer_complete_report', customer_id=c.id) }}">
+                                <i class="fas fa-file-alt me-2"></i>Complete Report
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('customer_detail', customer_id=c.id) }}">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('customers_edit', customer_id=c.id) }}">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('customers_delete', customer_id=c.id) }}" onsubmit="return confirm('⚠️ WARNING: This will permanently delete this customer and ALL associated data. This action cannot be undone. Are you absolutely sure?')">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-sm">
+                            <i class="fas fa-phone me-2 text-muted" style="width: 16px;"></i>
+                            <a href="tel:{{ c.phone }}" class="text-decoration-none">{{ c.phone }}</a>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center text-sm">
+                            <i class="fas fa-envelope me-2 text-muted" style="width: 16px;"></i>
+                            <a href="mailto:{{ c.email }}" class="text-decoration-none text-truncate">{{ c.email }}</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% set statuses = ['Active', 'Active', 'Active', 'Inactive', 'Active'] %}
+                        {% set status = statuses[loop.index0 % statuses|length] %}
+                        {% if status == 'Active' %}
+                            <span class="badge bg-success-soft text-success px-2 py-1">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary-soft text-secondary px-2 py-1">Inactive</span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">Jan {{ 15 + loop.index }}, 2024</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
     <!-- Pagination -->
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="text-muted">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3 gap-3">
+        <div class="text-muted text-center text-sm-start">
             Showing 1 to {{ customers|length }} of {{ customers|length }} entries
         </div>
         <nav>
             <ul class="pagination pagination-sm mb-0">
                 <li class="page-item disabled">
-                    <a class="page-link" href="#">Previous</a>
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left d-sm-none"></i>
+                        <span class="d-none d-sm-inline">Previous</span>
+                    </a>
                 </li>
                 <li class="page-item active">
                     <a class="page-link" href="#">1</a>
@@ -189,7 +283,10 @@
                     <a class="page-link" href="#">3</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="#">Next</a>
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-right d-sm-none"></i>
+                        <span class="d-none d-sm-inline">Next</span>
+                    </a>
                 </li>
             </ul>
         </nav>
@@ -210,23 +307,114 @@
 </div>
 
 <script>
-// Simple search functionality
+// Enhanced search functionality for both table and card views
 document.getElementById('searchInput').addEventListener('keyup', function(e) {
     const searchTerm = e.target.value.toLowerCase();
-    const tableRows = document.querySelectorAll('tbody tr');
     
+    // Search in table view
+    const tableRows = document.querySelectorAll('#tableView tbody tr');
     tableRows.forEach(row => {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(searchTerm) ? '' : 'none';
     });
+    
+    // Search in mobile card view
+    const cards = document.querySelectorAll('.customer-card');
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
 });
 
 // Select all checkbox functionality
-document.getElementById('selectAll').addEventListener('change', function(e) {
-    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = e.target.checked;
+const selectAllCheckbox = document.getElementById('selectAll');
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function(e) {
+        const checkboxes = document.querySelectorAll('#tableView tbody input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+}
+
+// View toggle functionality
+document.getElementById('listView').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('cardView').classList.remove('active');
+    // On mobile, cards are always shown, this is for future enhancement
+});
+
+document.getElementById('cardView').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('listView').classList.remove('active');
+    // On mobile, cards are always shown, this is for future enhancement
+});
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Add stagger animation to cards
+    const cards = document.querySelectorAll('.customer-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 50}ms`;
+        card.classList.add('fade-in');
     });
 });
 </script>
+
+<style>
+/* Additional mobile-specific styles */
+.customer-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary-color);
+}
+
+.customer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced dropdown for mobile */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border-radius: 12px;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .dropdown-item:hover {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+}
+</style>
 {% endblock %}

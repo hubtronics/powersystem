@@ -4,12 +4,12 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
     <div>
         <h3 class="mb-1">Vehicle Management</h3>
         <p class="text-muted mb-0">Manage all vehicles and their service history</p>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('vehicles_new') }}">
+    <a class="btn btn-primary w-100 w-md-auto" href="{{ url_for('vehicles_new') }}">
         <i class="fas fa-plus me-2"></i>Add New Vehicle
     </a>
 </div>
@@ -17,15 +17,15 @@
 <!-- Search and Filter -->
 <div class="stat-card mb-4">
     <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="input-group">
                 <span class="input-group-text">
                     <i class="fas fa-search"></i>
                 </span>
-                <input type="text" class="form-control" placeholder="Search by plate, VIN, make..." id="searchInput">
+                <input type="text" class="form-control" placeholder="Search vehicles..." id="searchInput">
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <select class="form-select">
                 <option selected>All Makes</option>
                 <option>BMW</option>
@@ -34,15 +34,15 @@
                 <option>Volkswagen</option>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <select class="form-select">
-                <option selected>All Customers</option>
-                {% for vehicle in vehicles %}
-                <option>{{ vehicle.customer.name }}</option>
-                {% endfor %}
+                <option selected>All Status</option>
+                <option>Active</option>
+                <option>In Service</option>
+                <option>Scheduled</option>
             </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-12 col-md-2">
             <button class="btn btn-outline-secondary w-100">
                 <i class="fas fa-filter me-2"></i>Filter
             </button>
@@ -51,29 +51,29 @@
 </div>
 
 <!-- Vehicle Statistics -->
-<div class="row mb-4">
-    <div class="col-md-3">
+<div class="row mb-4 g-3">
+    <div class="col-6 col-md-3">
         <div class="stat-card text-center">
             <div class="stat-number text-primary">{{ vehicles|length }}</div>
-            <div class="stat-label">Total Vehicles</div>
+            <div class="stat-label">Vehicles</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stat-card text-center">
             <div class="stat-number text-success">{{ (vehicles|length * 0.7)|int }}</div>
-            <div class="stat-label">Active Services</div>
+            <div class="stat-label">Active</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stat-card text-center">
             <div class="stat-number text-warning">{{ (vehicles|length * 0.2)|int }}</div>
-            <div class="stat-label">Scheduled Today</div>
+            <div class="stat-label">Scheduled</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stat-card text-center">
             <div class="stat-number text-info">{{ vehicles|length|int / 10 if vehicles else 0 }}%</div>
-            <div class="stat-label">Growth Rate</div>
+            <div class="stat-label">Growth</div>
         </div>
     </div>
 </div>
@@ -83,17 +83,19 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">All Vehicles</h5>
         <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-secondary active">
+            <button class="btn btn-outline-secondary active" id="listView">
                 <i class="fas fa-list"></i>
             </button>
-            <button class="btn btn-outline-secondary">
+            <button class="btn btn-outline-secondary" id="cardView">
                 <i class="fas fa-th-large"></i>
             </button>
         </div>
     </div>
     
     {% if vehicles %}
-    <div class="table-responsive">
+    
+    <!-- Desktop Table View -->
+    <div class="table-responsive d-none d-lg-block" id="tableView">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
@@ -190,6 +192,102 @@
         </table>
     </div>
 
+    <!-- Mobile Card View -->
+    <div class="d-lg-none" id="mobileCards">
+        {% for vehicle in vehicles %}
+        <div class="card mb-3 border-0 shadow-sm vehicle-card">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <div class="vehicle-icon me-3 flex-shrink-0">
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 45px; height: 45px;">
+                                <i class="fas fa-car"></i>
+                            </div>
+                        </div>
+                        <div class="min-width-0 flex-grow-1">
+                            <h6 class="mb-1 fw-bold text-truncate">{{ vehicle.make }} {{ vehicle.model }}</h6>
+                            <p class="mb-1 small text-muted">{{ vehicle.plate_number }}</p>
+                            <small class="text-muted">{{ vehicle.year or 'N/A' }} • {{ vehicle.color or 'N/A' }}</small>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link btn-sm p-1" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}">
+                                <i class="fas fa-wrench me-2"></i>Add Service
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('vehicles_edit', vehicle_id=vehicle.id) }}">
+                                <i class="fas fa-edit me-2"></i>Edit Vehicle
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('vehicles_delete', vehicle_id=vehicle.id) }}" onsubmit="return confirm('⚠️ WARNING: This will permanently delete this vehicle and ALL associated data. This action cannot be undone. Are you absolutely sure?')">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center small">
+                            <i class="fas fa-user me-2 text-muted" style="width: 16px;"></i>
+                            <span class="fw-medium">{{ vehicle.customer.name }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center small">
+                            <i class="fas fa-phone me-2 text-muted" style="width: 16px;"></i>
+                            <a href="tel:{{ vehicle.customer.phone }}" class="text-decoration-none">{{ vehicle.customer.phone }}</a>
+                        </div>
+                    </div>
+                    {% if vehicle.service_visits %}
+                    {% set last_visit = vehicle.service_visits|sort(attribute='visit_date', reverse=true)|first %}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center small">
+                            <i class="fas fa-history me-2 text-muted" style="width: 16px;"></i>
+                            <span>{{ last_visit.visit_date.strftime('%b %d, %Y') }} - {{ last_visit.service_type }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center small">
+                            <i class="fas fa-history me-2 text-muted" style="width: 16px;"></i>
+                            <span class="text-muted">No service history</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% set statuses = ['Active', 'In Service', 'Scheduled', 'Completed'] %}
+                        {% set status = statuses[loop.index0 % statuses|length] %}
+                        {% if status == 'Active' %}
+                            <span class="badge bg-success-soft text-success px-2 py-1">Active</span>
+                        {% elif status == 'In Service' %}
+                            <span class="badge bg-warning-soft text-warning px-2 py-1">In Service</span>
+                        {% elif status == 'Scheduled' %}
+                            <span class="badge bg-info-soft text-info px-2 py-1">Scheduled</span>
+                        {% else %}
+                            <span class="badge bg-secondary-soft text-secondary px-2 py-1">Completed</span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">VIN: {{ vehicle.vin[:8] }}...</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
     <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">
         <div class="text-muted">
@@ -231,23 +329,141 @@
 </div>
 
 <script>
-// Simple search functionality
+// Enhanced search functionality for both table and card views
 document.getElementById('searchInput').addEventListener('keyup', function(e) {
     const searchTerm = e.target.value.toLowerCase();
-    const tableRows = document.querySelectorAll('tbody tr');
     
+    // Search in table view
+    const tableRows = document.querySelectorAll('#tableView tbody tr');
     tableRows.forEach(row => {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(searchTerm) ? '' : 'none';
     });
+    
+    // Search in mobile card view
+    const cards = document.querySelectorAll('.vehicle-card');
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
 });
 
 // Select all checkbox functionality
-document.getElementById('selectAll').addEventListener('change', function(e) {
-    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = e.target.checked;
+const selectAllCheckbox = document.getElementById('selectAll');
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function(e) {
+        const checkboxes = document.querySelectorAll('#tableView tbody input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+}
+
+// View toggle functionality
+document.getElementById('listView').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('cardView').classList.remove('active');
+});
+
+document.getElementById('cardView').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('listView').classList.remove('active');
+});
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.vehicle-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 50}ms`;
+        card.classList.add('fade-in');
     });
 });
 </script>
+
+<style>
+/* Vehicle card mobile styles */
+.vehicle-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary-color);
+}
+
+.vehicle-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.bg-warning-soft {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.1) !important;
+}
+
+.bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .vehicle-card .small {
+        font-size: 0.8rem;
+    }
+    
+    .vehicle-card h6 {
+        font-size: 1rem;
+    }
+    
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border-radius: 12px;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .dropdown-item:hover {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+}
+
+@media (max-width: 480px) {
+    .vehicle-card .card-body {
+        padding: 1rem !important;
+    }
+    
+    .vehicle-card h6 {
+        font-size: 0.95rem;
+    }
+    
+    .vehicle-card .small {
+        font-size: 0.75rem;
+    }
+}
+</style>
 {% endblock %}

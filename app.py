@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 import os
 import urllib.parse
+from vehicle_data import get_all_makes, get_models_for_make
 
 # ----- Setup -----
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -194,13 +195,26 @@ def customers():
 @login_required
 def customers_new():
     if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        email = request.form.get('email')
+        name = request.form.get('name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        
+        # Check for duplicate customer by name and phone
+        existing_customer = Customer.query.filter(
+            (Customer.name.ilike(name)) | (Customer.phone == phone)
+        ).first()
+        
+        if existing_customer:
+            if existing_customer.name.lower() == name.lower():
+                flash(f'Customer with name "{name}" already exists!', 'warning')
+            elif existing_customer.phone == phone:
+                flash(f'Customer with phone number "{phone}" already exists!', 'warning')
+            return render_template('customers_new.html')
+        
         c = Customer(name=name, phone=phone, email=email)
         db.session.add(c)
         db.session.commit()
-        flash('Customer created', 'success')
+        flash('Customer created successfully!', 'success')
         return redirect(url_for('customers'))
     return render_template('customers_new.html')
 
@@ -224,8 +238,17 @@ def vehicles_new():
         customer_id = request.form.get('customer_id')
         plate_number = request.form.get('plate_number')
         vin = request.form.get('vin')
+        
+        # Handle make (check if custom)
         make = request.form.get('make')
+        if make == 'Other':
+            make = request.form.get('custom_make', '').strip()
+        
+        # Handle model (check if custom)
         model = request.form.get('model')
+        if model == 'Other':
+            model = request.form.get('custom_model', '').strip()
+        
         year = request.form.get('year')
         color = request.form.get('color')
         mileage = request.form.get('mileage')
@@ -266,7 +289,8 @@ def vehicles_new():
             return render_template('vehicles_new.html', customers=customers)
     
     customers = Customer.query.all()
-    return render_template('vehicles_new.html', customers=customers)
+    makes = get_all_makes()
+    return render_template('vehicles_new.html', customers=customers, makes=makes)
 
 @app.route('/vehicles/<int:vehicle_id>')
 @login_required
@@ -274,6 +298,14 @@ def vehicle_detail(vehicle_id):
     vehicle = Vehicle.query.get_or_404(vehicle_id)
     service_visits = ServiceVisit.query.filter_by(vehicle_id=vehicle_id).order_by(ServiceVisit.visit_date.desc()).all()
     return render_template('vehicle_detail.html', vehicle=vehicle, service_visits=service_visits)
+
+@app.route('/api/models/<make>')
+@login_required
+def get_models_api(make):
+    """API endpoint to get models for a specific make"""
+    from flask import jsonify
+    models = get_models_for_make(make)
+    return jsonify(models)
 
 # ----- Service Visits -----
 @app.route('/vehicles/<int:vehicle_id>/service/new', methods=['GET', 'POST'])

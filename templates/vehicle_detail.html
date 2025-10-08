@@ -5,18 +5,34 @@
 {% block content %}
 <!-- Page Header -->
 <div class="d-flex align-items-center mb-4">
-    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary me-3">
+    <a href="{{ url_for('vehicles') }}" class="btn btn-outline-secondary me-3 flex-shrink-0">
         <i class="fas fa-arrow-left"></i>
     </a>
-    <div class="flex-grow-1">
-        <h3 class="mb-1">{{ vehicle.make }} {{ vehicle.model }} {{ vehicle.year or '' }}</h3>
-        <p class="text-muted mb-0">License: {{ vehicle.plate_number }} • Owner: {{ vehicle.customer.name }}</p>
+    <div class="flex-grow-1 min-width-0">
+        <h3 class="mb-1 text-truncate">{{ vehicle.make }} {{ vehicle.model }} {{ vehicle.year or '' }}</h3>
+        <p class="text-muted mb-0 small">{{ vehicle.plate_number }} • {{ vehicle.customer.name }}</p>
     </div>
-    <div class="btn-group">
+    <!-- Mobile Action Button -->
+    <div class="dropdown d-md-none">
+        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-plus"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}">
+                <i class="fas fa-wrench me-2"></i>New Service
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('customer_complete_report', customer_id=vehicle.customer.id) }}">
+                <i class="fas fa-file-alt me-2"></i>Complete Report
+            </a></li>
+        </ul>
+    </div>
+    <!-- Desktop Action Buttons -->
+    <div class="btn-group d-none d-md-flex">
         <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-primary">
             <i class="fas fa-wrench me-2"></i>New Service
         </a>
-        <a href="{{ url_for('customer_complete_report', customer_id=vehicle.customer.id) }}" class="btn btn-outline-secondary">
+        <a href="{{ url_for('customer_complete_report', customer_id=vehicle.customer.id) }}"
+            class="btn btn-outline-secondary">
             <i class="fas fa-file-alt me-2"></i>Complete Report
         </a>
     </div>
@@ -52,7 +68,8 @@
                 </div>
                 <div class="info-item d-flex justify-content-between">
                     <span class="text-muted">Mileage</span>
-                    <span class="fw-medium">{{ '{:,}'.format(vehicle.mileage) if vehicle.mileage else 'N/A' }} miles</span>
+                    <span class="fw-medium">{{ '{:,}'.format(vehicle.mileage) if vehicle.mileage else 'N/A' }}
+                        miles</span>
                 </div>
             </div>
         </div>
@@ -65,7 +82,8 @@
             <div class="customer-info">
                 <div class="d-flex align-items-center mb-3">
                     <div class="avatar-sm me-3">
-                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px;">
+                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold"
+                            style="width: 40px; height: 40px;">
                             {{ vehicle.customer.name[0].upper() }}
                         </div>
                     </div>
@@ -99,16 +117,17 @@
                 </div>
                 <div class="stat-item d-flex justify-content-between mb-2">
                     <span class="text-muted">Total Spent</span>
-                    <span class="fw-medium">KSH {{ '{:,.2f}'.format(service_visits|sum(attribute='total_cost')) if service_visits else '0.00' }}</span>
+                    <span class="fw-medium">KSH {{ '{:,.2f}'.format(service_visits|sum(attribute='total_cost')) if
+                        service_visits else '0.00' }}</span>
                 </div>
                 <div class="stat-item d-flex justify-content-between mb-2">
                     <span class="text-muted">Last Service</span>
                     <span class="fw-medium">
                         {% if service_visits %}
-                            {% set latest_visit = service_visits|sort(attribute='visit_date', reverse=true)|first %}
-                            {{ latest_visit.visit_date.strftime('%b %d, %Y') }}
+                        {% set latest_visit = service_visits|sort(attribute='visit_date', reverse=true)|first %}
+                        {{ latest_visit.visit_date.strftime('%b %d, %Y') }}
                         {% else %}
-                            Never
+                        Never
                         {% endif %}
                     </span>
                 </div>
@@ -135,106 +154,134 @@
             {% if service_visits %}
             <div class="service-timeline">
                 {% for visit in service_visits|sort(attribute='visit_date', reverse=true) %}
-                <div class="timeline-item mb-4 p-3 border rounded">
+                <div class="timeline-item mb-3 p-3 border rounded">
+                    <!-- Service Header -->
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center mb-1">
-                                <h6 class="mb-0 me-3">{{ visit.service_type }}</h6>
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center mb-1">
+                                <h6 class="mb-1 mb-sm-0 me-sm-3">{{ visit.service_type }}</h6>
                                 <span class="badge bg-{{ 'success' if visit.status == 'Completed' else 'warning' }}">
                                     {{ visit.status }}
                                 </span>
                             </div>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ visit.visit_date.strftime('%B %d, %Y at %I:%M %p') }}
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ visit.visit_date.strftime('%b %d, %Y') }}
                                 {% if visit.technician %}
-                                    • <i class="fas fa-user me-1"></i>{{ visit.technician }}
+                                <br class="d-sm-none"><span class="d-none d-sm-inline"> • </span><i class="fas fa-user me-1"></i>{{ visit.technician }}
                                 {% endif %}
-                            </small>
+                            </div>
                         </div>
-                        <div class="text-end">
-                            <div class="fw-bold text-success">KSH {{ '{:,.2f}'.format(visit.total_cost) }}</div>
-                            <small class="text-muted">Total Cost</small>
+                        <div class="text-end flex-shrink-0 ms-2">
+                            <div class="fw-bold text-success">KSh {{ '{:,.0f}'.format(visit.total_cost) }}</div>
+                            <small class="text-muted">Total</small>
                         </div>
                     </div>
 
+                    <!-- Service Details -->
                     {% if visit.customer_complaint %}
                     <div class="mb-2">
-                        <strong class="text-danger">Customer Complaint:</strong>
-                        <p class="mb-1 text-muted">{{ visit.customer_complaint }}</p>
+                        <strong class="text-danger small">Issue:</strong>
+                        <p class="mb-1 text-muted small">{{ visit.customer_complaint }}</p>
                     </div>
                     {% endif %}
 
                     {% if visit.work_performed %}
                     <div class="mb-2">
-                        <strong class="text-success">Work Performed:</strong>
-                        <p class="mb-1 text-muted">{{ visit.work_performed }}</p>
+                        <strong class="text-success small">Work Done:</strong>
+                        <p class="mb-1 text-muted small">{{ visit.work_performed }}</p>
                     </div>
                     {% endif %}
 
                     {% if visit.description %}
                     <div class="mb-2">
-                        <strong>Description:</strong>
-                        <p class="mb-1 text-muted">{{ visit.description }}</p>
+                        <strong class="small">Notes:</strong>
+                        <p class="mb-1 text-muted small">{{ visit.description }}</p>
                     </div>
                     {% endif %}
 
                     <!-- Parts used in this visit -->
                     {% if visit.parts_used %}
                     <div class="parts-section mt-3 pt-3 border-top">
-                        <h6 class="mb-2">
-                            <i class="fas fa-cog me-2"></i>Parts Used
+                        <h6 class="mb-3">
+                            <i class="fas fa-cog me-2"></i>Parts Used ({{ visit.parts_used|length }})
                         </h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-borderless">
-                                <thead>
-                                    <tr class="text-muted">
-                                        <th>Part Number</th>
-                                        <th>Description</th>
-                                        <th>Qty</th>
-                                        <th>Cost</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for part in visit.parts_used %}
-                                    <tr>
-                                        <td class="fw-medium">{{ part.part_number }}</td>
-                                        <td>{{ part.part_name }}</td>
-                                        <td>{{ part.quantity }}</td>
-                                        <td>KSH {{ '{:,.2f}'.format(part.total_part_cost) }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        
+                        <!-- Desktop Table View -->
+                        <div class="d-none d-lg-block">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless">
+                                    <thead>
+                                        <tr class="text-muted">
+                                            <th>Part Number</th>
+                                            <th>Description</th>
+                                            <th>Qty</th>
+                                            <th>Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for part in visit.parts_used %}
+                                        <tr>
+                                            <td class="fw-medium">{{ part.part_number }}</td>
+                                            <td>{{ part.part_name }}</td>
+                                            <td>{{ part.quantity }}</td>
+                                            <td>KSH {{ '{:,.2f}'.format(part.total_part_cost) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Card View -->
+                        <div class="d-lg-none">
+                            {% for part in visit.parts_used %}
+                            <div class="card mb-2 border-0 bg-light">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1 min-width-0">
+                                            <h6 class="mb-1 text-primary small fw-bold">{{ part.part_number }}</h6>
+                                            <p class="mb-1 small text-truncate">{{ part.part_name }}</p>
+                                            <small class="text-muted">Qty: {{ part.quantity }}</small>
+                                        </div>
+                                        <div class="text-end flex-shrink-0 ms-2">
+                                            <strong class="small text-success">KSh {{ '{:,.0f}'.format(part.total_part_cost) }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                     {% endif %}
 
                     <!-- Cost breakdown -->
                     <div class="cost-breakdown mt-3 pt-3 border-top">
-                        <div class="row text-sm">
+                        <div class="row g-2">
                             <div class="col-6">
-                                <span class="text-muted">Labor ({{ visit.labor_hours }}h @ ${{ '{:,.2f}'.format(visit.labor_rate) }}/h):</span>
-                                <span class="fw-medium">${{ '{:,.2f}'.format(visit.labor_cost) }}</span>
+                                <div class="small text-muted">Labor</div>
+                                <div class="small fw-medium">{{ visit.labor_hours }}h × KSh {{ '{:,.0f}'.format(visit.labor_rate) }}</div>
+                                <div class="small fw-bold">KSh {{ '{:,.0f}'.format(visit.labor_cost) }}</div>
                             </div>
                             <div class="col-6">
-                                <span class="text-muted">Parts Total:</span>
-                                <span class="fw-medium">${{ '{:,.2f}'.format(visit.parts_used|sum(attribute='total_part_cost')) if visit.parts_used else '0.00' }}</span>
+                                <div class="small text-muted">Parts</div>
+                                <div class="small fw-medium">{{ visit.parts_used|length }} items</div>
+                                <div class="small fw-bold">KSh {{ '{:,.0f}'.format(visit.parts_used|sum(attribute='total_part_cost')) if visit.parts_used else '0' }}</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="action-buttons mt-3">
-                        <div class="btn-group btn-group-sm">
-                            <a href="{{ url_for('service_visit_detail', visit_id=visit.id) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-eye me-1"></i>View Details
-                            </a>
-                            <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}" class="btn btn-outline-secondary" target="_blank">
-                                <i class="fas fa-print me-1"></i>Print Invoice
-                            </a>
-                            <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-outline-success">
-                                <i class="fas fa-plus me-1"></i>Add Parts
-                            </a>
-                        </div>
+                    <div class="action-buttons mt-3 d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('service_visit_detail', visit_id=visit.id) }}"
+                            class="btn btn-outline-primary btn-sm flex-fill">
+                            <i class="fas fa-eye me-1"></i>Details
+                        </a>
+                        <a href="{{ url_for('print_service_visit', visit_id=visit.id) }}"
+                            class="btn btn-outline-secondary btn-sm flex-fill" target="_blank">
+                            <i class="fas fa-print me-1"></i>Print
+                        </a>
+                        <a href="{{ url_for('add_part', visit_id=visit.id) }}" class="btn btn-outline-success btn-sm flex-fill">
+                            <i class="fas fa-plus me-1"></i>Parts
+                        </a>
                     </div>
                 </div>
                 {% endfor %}
@@ -246,7 +293,8 @@
                     <i class="fas fa-wrench fa-4x text-muted"></i>
                 </div>
                 <h6 class="text-muted mb-3">No Service History</h6>
-                <p class="text-muted mb-4">This vehicle hasn't had any services yet. Start by adding the first service visit.</p>
+                <p class="text-muted mb-4">This vehicle hasn't had any services yet. Start by adding the first service
+                    visit.</p>
                 <a href="{{ url_for('service_visit_new', vehicle_id=vehicle.id) }}" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Add First Service
                 </a>
@@ -255,4 +303,119 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Mobile-optimized vehicle detail styles */
+@media (max-width: 768px) {
+    .timeline-item {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .timeline-item h6 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .timeline-item .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .timeline-item .small {
+        font-size: 0.8rem;
+    }
+    
+    .cost-breakdown .small {
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+    
+    .parts-section .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    .parts-section .small {
+        font-size: 0.75rem;
+    }
+    
+    .action-buttons .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .info-item {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    
+    .service-stats .stat-item {
+        font-size: 0.9rem;
+    }
+    
+    .customer-info {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .timeline-item {
+        padding: 0.75rem !important;
+    }
+    
+    .timeline-item h6 {
+        font-size: 0.95rem;
+    }
+    
+    .timeline-item .small,
+    .cost-breakdown .small,
+    .parts-section .small {
+        font-size: 0.7rem;
+    }
+    
+    .action-buttons .btn {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+    }
+    
+    .action-buttons {
+        gap: 0.25rem !important;
+    }
+    
+    .parts-section h6 {
+        font-size: 0.9rem;
+    }
+    
+    .fw-bold {
+        font-size: 0.85rem;
+    }
+}
+
+/* Ensure proper text wrapping */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.min-width-0 {
+    min-width: 0;
+}
+
+/* Better spacing for mobile */
+@media (max-width: 768px) {
+    .col-xl-4 {
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card.mt-4 {
+        margin-top: 1rem !important;
+    }
+}
+</style>
 {% endblock %}
